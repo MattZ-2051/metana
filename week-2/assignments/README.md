@@ -10,4 +10,4 @@
 
 ### Pixel art was created using Asesprite software
 
-![Example NFT](https://gateway.pinata.cloud/ipfs/QmbYq5UDZsD9wnzPTUMdg7XYrARM1U8ECnt9HUnXsHgT7u/7.png)
+![Example NFT](https://gateway.pinata.cloud/ipfs/QmbYq5UDZsD9wnzPTUMdg7XYrARM1U8ECnt9HUnXsHgT7u/1.png)
