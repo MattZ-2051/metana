@@ -47,11 +47,4 @@ contract MyNft is ERC721URIStorage, Ownable {
         // otherwise, use the default ERC721.isApprovedForAll()
         return ERC721.isApprovedForAll(_owner, _operator);
     }
-
-    function encode(
-        string memory name,
-        string memory sym
-    ) external pure returns (bytes memory) {
-        return abi.encode(name, sym);
-    }
 }
