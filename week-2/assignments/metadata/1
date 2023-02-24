@@ -1,0 +1,10 @@
+{
+  "description" : "Friendly OpenSea Creature that enjoys long swims in the ocean.",
+  "image" : "https://gateway.pinata.cloud/ipfs/QmbYq5UDZsD9wnzPTUMdg7XYrARM1U8ECnt9HUnXsHgT7u/1.png",
+  "attributes" : [
+    {
+       "trait_type" : "color",
+       "value" : "purple"
+    }
+]
+}
