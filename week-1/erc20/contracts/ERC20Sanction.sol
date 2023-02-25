@@ -14,13 +14,6 @@ contract Token is ERC20 {
         address _to,
         uint256 _amount
     ) {
-        require(sanctionedList[_from] == false, "Address is sanctioned");
-        require(sanctionedList[_to] == false, "Address is sanctioned");
-        _;
-    }
-
-    modifier onlyAuthority(address _address) {
-        require(_address == authority, "Not Authorized");
         _;
     }
 
@@ -28,16 +21,12 @@ contract Token is ERC20 {
         _mint(msg.sender, initialSupply);
     }
 
-    function addToSanctionedList(
-        address account
-    ) public onlyAuthority(msg.sender) {
+    function addToSanctionedList(address account) external {
         sanctionedList[account] = true;
         emit Sanction(account, sanctionedList[account]);
     }
 
-    function removeFromSanctionedList(
-        address account
-    ) public onlyAuthority(msg.sender) {
+    function removeFromSanctionedList(address account) external {
         sanctionedList[account] = false;
         emit Sanction(account, sanctionedList[account]);
     }
@@ -47,6 +36,7 @@ contract Token is ERC20 {
         address to,
         uint256 amount
     ) internal virtual override sanctioned(from, to, amount) {
-        sanctionedList[msg.sender] = false;
+        require(sanctionedList[from] == false, "Address is sanctioned");
+        require(sanctionedList[to] == false, "Address is sanctioned");
     }
 }
