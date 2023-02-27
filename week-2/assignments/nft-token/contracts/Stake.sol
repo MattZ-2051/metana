@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract MyNft is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
@@ -61,7 +60,7 @@ contract MyErc is ERC20 {
     uint256 maxSupply = 100000000 * (10 ** 18);
 
     constructor(uint256 initialSupply) ERC20("test", "TST") {
-        _mint(msg.sender, initialSupply);
+        _mint(address(this), initialSupply);
     }
 
     modifier onlyOwner() {
@@ -77,9 +76,9 @@ contract MyErc is ERC20 {
         payable(owner).transfer(address(this).balance);
     }
 
-    function createTokens() external payable {
+    function createTokens(address to, uint256 amount) external payable {
         require(totalSupply() <= maxSupply, "max supply reached");
-        _mint(msg.sender, 10 * (10 ** 18));
+        _mint(to, amount);
     }
 
     receive() external payable {}
@@ -87,24 +86,90 @@ contract MyErc is ERC20 {
     fallback() external payable {}
 }
 
-contract Stake is Ownable, ReentrancyGuard {
+contract Stake is Ownable {
     MyErc public immutable Token;
     MyNft public immutable Nft;
     uint256 private immutable tokenRewardAmount = 10 * (10 ** 18);
+    uint256 private immutable rewardTime = 24 hours;
 
     struct StakedNft {
-        address owner;
         uint256 tokenId;
+        address owner;
     }
 
     struct Staker {
-        StakedNft[] stakedTokens;
+        StakedNft token;
         uint256 rewards;
         uint256 lastUpdateTime;
+    }
+
+    mapping(address => Staker) public stakers;
+    mapping(uint256 => address) tokenToStaker;
+
+    modifier onlyTokenOwner(uint256 tokenId) {
+        require(
+            tokenToStaker[tokenId] == msg.sender,
+            "you are not owner of token"
+        );
+        _;
     }
 
     constructor(address payable _tokenAddress, address payable _nftAddress) {
         Token = MyErc(_tokenAddress);
         Nft = MyNft(_nftAddress);
     }
+
+    function getRewards() external returns (uint256) {}
+
+    function stake(uint256 tokenId) external {
+        require(
+            Nft.ownerOf(tokenId) == msg.sender,
+            "only owner of token can stake"
+        );
+        Nft.transferFrom(msg.sender, address(this), tokenId);
+        StakedNft memory newStake = StakedNft(tokenId, msg.sender);
+        Staker memory newStaker = Staker(newStake, 0, block.timestamp);
+        tokenToStaker[tokenId] = msg.sender;
+        stakers[msg.sender] = newStaker;
+    }
+
+    function withdrawStakeRewards(
+        uint256 tokenId
+    ) external onlyTokenOwner(tokenId) {
+        Staker storage stakerInfo = stakers[msg.sender];
+        require(stakerInfo.rewards > 0, "no rewards to withdraw");
+        require(
+            (stakerInfo.lastUpdateTime + rewardTime) < block.timestamp,
+            "need to wait 24 hrs"
+        );
+        Token.createTokens(msg.sender, _getRewards(stakerInfo));
+        stakerInfo.lastUpdateTime = block.timestamp;
+        delete stakerInfo.rewards;
+    }
+
+    function withdrawNft(uint256 tokenId) external onlyTokenOwner(tokenId) {
+        Staker storage stakerInfo = stakers[msg.sender];
+        if (
+            stakerInfo.rewards > 0 &&
+            (stakerInfo.lastUpdateTime + rewardTime) < block.timestamp
+        ) {
+            Token.createTokens(msg.sender, _getRewards(stakerInfo));
+        }
+        Nft.transferFrom(address(this), msg.sender, tokenId);
+        delete stakerInfo.lastUpdateTime;
+        delete tokenToStaker[tokenId];
+        delete stakerInfo.token;
+        delete stakerInfo.rewards;
+    }
+
+    function _getRewards(Staker memory staker) private view returns (uint256) {
+        return
+            staker.rewards +
+            ((block.timestamp - staker.lastUpdateTime) / rewardTime) *
+            tokenRewardAmount;
+    }
+
+    receive() external payable {}
+
+    fallback() external payable {}
 }
