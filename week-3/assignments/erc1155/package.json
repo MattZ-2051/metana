@@ -32,7 +32,11 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@openzeppelin/contracts": "^4.8.1",
+		"axios": "^1.3.4",
+		"effector": "^22.5.2",
 		"ethers": "^5",
+		"sweetalert2": "^11.7.3",
 		"tw-elements": "^1.0.0-beta1"
 	}
 }
