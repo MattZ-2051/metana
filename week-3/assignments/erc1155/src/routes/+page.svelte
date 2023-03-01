@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
-	import { mintTokenFx, user } from '$lib/store';
+	import { getTokenBalanceFx, mintTokenFx, user } from '$lib/store';
 
 	$: tokenBalance = $user && $user.balance;
 	$: userTxPending = $user?.txPending;
@@ -21,6 +21,13 @@
 					title="Mint Token"
 					onClick={() =>
 						mintTokenFx({ address: $user ? $user.ethAddress : '', tokenId: 1, amount: 1 })}
+					loading={userTxPending}
+				/>
+			</div>
+			<div class="mt-4">
+				<Button
+					title="Check Token Balance"
+					onClick={() => getTokenBalanceFx({ address: $user ? $user.ethAddress : '', tokenId: 1 })}
 					loading={userTxPending}
 				/>
 			</div>

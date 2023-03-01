@@ -1,4 +1,4 @@
-import { connectWallet, getTxStatus, mintToken } from '$lib/ethers';
+import { connectWallet, getTokenBalance, getTxStatus, mintToken } from '$lib/ethers';
 import type { User } from '$lib/types';
 import { createEffect, createEvent, createStore } from 'effector';
 import Swal from 'sweetalert2';
@@ -25,6 +25,16 @@ export const mintTokenFx = createEffect<
 
 const getTxStatusFx = createEffect<{ hash: string }, any>(async ({ hash }) => {
 	return await getTxStatus(hash);
+});
+
+export const getTokenBalanceFx = createEffect<{ address: string; tokenId: number }, any>(
+	async ({ address, tokenId }) => {
+		return await getTokenBalance(address, tokenId);
+	}
+);
+
+getTokenBalanceFx.doneData.watch((res) => {
+	console.log('res', res);
 });
 
 mintTokenFx.doneData.watch((res) => {

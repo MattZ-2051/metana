@@ -87,6 +87,16 @@ export const getBalance = async (): Promise<BigNumber> => {
 	return await signer.getBalance();
 };
 
+export const getTokenBalance = async (address: string, tokenId: number) => {
+	const signer = provider.getSigner();
+	const contract = new ethers.Contract(
+		'0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A',
+		myNftAbi,
+		signer
+	);
+	const res = await contract.balanceOf(address, tokenId);
+	return res.toNumber();
+};
 export const getTxStatus = async (tx: string) => {
 	return await provider.waitForTransaction(tx);
 };
