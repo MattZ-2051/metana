@@ -71,7 +71,7 @@ export const mintToken = async ({
 	tokenId: number;
 	address: string;
 	amount: number;
-}) => {
+}): Promise<{ hash: string }> => {
 	const signer = provider.getSigner();
 	const contract = new ethers.Contract(
 		'0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A',
@@ -99,4 +99,15 @@ export const getTokenBalance = async (address: string, tokenId: number) => {
 };
 export const getTxStatus = async (tx: string) => {
 	return await provider.waitForTransaction(tx);
+};
+
+export const getTokenUri = async (tokenId: number): Promise<string> => {
+	const signer = provider.getSigner();
+	const contract = new ethers.Contract(
+		'0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A',
+		myNftAbi,
+		signer
+	);
+	const res: string = await contract.uri(tokenId);
+	return res.replace('{id}', tokenId.toString());
 };

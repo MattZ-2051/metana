@@ -1,4 +1,4 @@
-import { connectWallet, getTokenBalance, getTxStatus, mintToken } from '$lib/ethers';
+import { connectWallet, getTokenBalance, getTokenUri, getTxStatus, mintToken } from '$lib/ethers';
 import type { User } from '$lib/types';
 import { createEffect, createEvent, createStore } from 'effector';
 import Swal from 'sweetalert2';
