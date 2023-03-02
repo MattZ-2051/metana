@@ -1,4 +1,4 @@
-import { connectWallet, getTokenBalance, getTokenUri, getTxStatus, mintToken } from '$lib/ethers';
+import { connectWallet, getTokenBalance, getTxStatus, mintToken } from '$lib/ethers';
 import type { User } from '$lib/types';
 import { createEffect, createEvent, createStore } from 'effector';
 import Swal from 'sweetalert2';
@@ -6,6 +6,7 @@ import Swal from 'sweetalert2';
 const walletLogin = createEvent<User>();
 
 const updateTxPending = createEvent<boolean>();
+const updateUserTokens = createEvent<Record<string, number>>();
 
 export const walletLoginFx = createEffect<void, User>(async () => {
 	const res = await connectWallet();
@@ -27,14 +28,18 @@ const getTxStatusFx = createEffect<{ hash: string }, any>(async ({ hash }) => {
 	return await getTxStatus(hash);
 });
 
-export const getTokenBalanceFx = createEffect<{ address: string; tokenId: number }, any>(
-	async ({ address, tokenId }) => {
-		return await getTokenBalance(address, tokenId);
-	}
-);
+export const getTokenBalanceFx = createEffect<{ address: string }, any>(async ({ address }) => {
+	const tokenIds = [1, 2, 3, 4, 5, 6];
+	return Promise.all([...tokenIds.map((id) => getTokenBalance(address, id))]);
+});
 
 getTokenBalanceFx.doneData.watch((res) => {
-	console.log('res', res);
+	const tokenMap: Record<string, number> = {};
+	for (let i = 0; i < res.length; i++) {
+		tokenMap[(i + 1).toString()] = res[i];
+	}
+	console.log('token', tokenMap);
+	updateUserTokens(tokenMap);
 });
 
 mintTokenFx.doneData.watch((res) => {
@@ -43,7 +48,6 @@ mintTokenFx.doneData.watch((res) => {
 
 getTxStatusFx.doneData.watch((res) => {
 	updateTxPending(false);
-	console.log('tx status res', res);
 });
 
 getTxStatusFx.failData.watch(() => {
@@ -69,6 +73,7 @@ mintTokenFx.failData.watch(() => {
 
 walletLoginFx.doneData.watch((res) => {
 	walletLogin(res);
+	getTokenBalanceFx({ address: res.ethAddress });
 	Swal.fire({
 		icon: 'success',
 		title: 'Success',
@@ -89,5 +94,10 @@ export const user = createStore<User | null>(null)
 	.on(updateTxPending, (prevState, payload) => {
 		if (prevState) {
 			return { ...prevState, txPending: payload };
+		}
+	})
+	.on(updateUserTokens, (prevState, payload) => {
+		if (prevState) {
+			return { ...prevState, nftBalance: payload };
 		}
 	});

@@ -1,6 +1,7 @@
-import type { User } from '$lib/types';
 import { BigNumber, ethers } from 'ethers';
+import axios from 'axios';
 import detectEthereumProvider from '@metamask/detect-provider';
+import type { User } from '$lib/types';
 import { myNftAbi } from '../../contracts/abi';
 
 let provider: ethers.providers.Web3Provider;
@@ -87,7 +88,7 @@ export const getBalance = async (): Promise<BigNumber> => {
 	return await signer.getBalance();
 };
 
-export const getTokenBalance = async (address: string, tokenId: number) => {
+export const getTokenBalance = async (address: string, tokenId: number): Promise<number> => {
 	const signer = provider.getSigner();
 	const contract = new ethers.Contract(
 		'0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A',
@@ -110,4 +111,10 @@ export const getTokenUri = async (tokenId: number): Promise<string> => {
 	);
 	const res: string = await contract.uri(tokenId);
 	return res.replace('{id}', tokenId.toString());
+};
+
+export const getTokenUriInfo = async (uri: string) => {
+	const res = await axios.get(uri);
+	console.log('res', res);
+	return res;
 };
