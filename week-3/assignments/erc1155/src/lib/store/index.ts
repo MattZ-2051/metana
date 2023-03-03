@@ -1,4 +1,4 @@
-import { connectWallet, getTokenBalance, getTxStatus, mintToken } from '$lib/ethers';
+import { burnToken, connectWallet, getTokenBalance, getTxStatus, mintToken } from '$lib/ethers';
 import type { User } from '$lib/types';
 import { createEffect, createEvent, createStore } from 'effector';
 import Swal from 'sweetalert2';
@@ -15,6 +15,13 @@ export const walletLoginFx = createEffect<void, User>(async () => {
 	} else {
 		throw new Error('Error connecting to metamask');
 	}
+});
+
+export const burnTokenFx = createEffect<
+	{ address: string; tokenId: number; amount: number },
+	{ hash: string }
+>(async ({ address, tokenId, amount }) => {
+	return await burnToken({ address, tokenId, amount });
 });
 
 export const mintTokenFx = createEffect<
@@ -42,6 +49,18 @@ getTokenBalanceFx.doneData.watch((res) => {
 	}
 	console.log('token', tokenMap);
 	updateUserTokens(tokenMap);
+});
+
+burnTokenFx.doneData.watch((res) => {
+	getTxStatusFx({ hash: res.hash as string });
+});
+
+burnTokenFx.failData.watch((res) => {
+	Swal.fire({
+		icon: 'error',
+		title: 'Oops...',
+		text: 'Error burning'
+	});
 });
 
 mintTokenFx.doneData.watch((res) => {

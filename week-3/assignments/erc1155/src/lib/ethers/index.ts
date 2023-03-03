@@ -82,6 +82,24 @@ export const mintToken = async ({
 	return await contract.mintTo(address, tokenId, amount);
 };
 
+export const burnToken = async ({
+	tokenId,
+	address,
+	amount
+}: {
+	tokenId: number;
+	address: string;
+	amount: number;
+}): Promise<{ hash: string }> => {
+	const signer = provider.getSigner();
+	const contract = new ethers.Contract(
+		'0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A',
+		myNftAbi,
+		signer
+	);
+
+	return await contract.burn(address, tokenId, amount);
+};
 export const getBalance = async (): Promise<BigNumber> => {
 	const signer = provider.getSigner();
 	return await signer.getBalance();
