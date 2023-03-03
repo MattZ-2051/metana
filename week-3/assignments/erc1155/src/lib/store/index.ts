@@ -36,7 +36,9 @@ export const getTokenBalanceFx = createEffect<{ address: string }, any>(async ({
 getTokenBalanceFx.doneData.watch((res) => {
 	const tokenMap: Record<string, number> = {};
 	for (let i = 0; i < res.length; i++) {
-		tokenMap[(i + 1).toString()] = res[i];
+		if (res[i] > 0) {
+			tokenMap[(i + 1).toString()] = res[i];
+		}
 	}
 	console.log('token', tokenMap);
 	updateUserTokens(tokenMap);

@@ -1,5 +1,4 @@
 import { BigNumber, ethers } from 'ethers';
-import axios from 'axios';
 import detectEthereumProvider from '@metamask/detect-provider';
 import type { User } from '$lib/types';
 import { myNftAbi } from '../../contracts/abi';
@@ -111,10 +110,4 @@ export const getTokenUri = async (tokenId: number): Promise<string> => {
 	);
 	const res: string = await contract.uri(tokenId);
 	return res.replace('{id}', tokenId.toString());
-};
-
-export const getTokenUriInfo = async (uri: string) => {
-	const res = await axios.get(uri);
-	console.log('res', res);
-	return res;
 };
