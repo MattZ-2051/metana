@@ -5,6 +5,7 @@ import { myNftAbi } from '../../contracts/abi';
 
 let provider: ethers.providers.Web3Provider;
 
+const contractAddress = '0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A';
 // A Web3Provider wraps a standard Web3 provider, which is
 // what MetaMask injects as window.ethereum into each page
 
@@ -73,11 +74,7 @@ export const mintToken = async ({
 	amount: number;
 }): Promise<{ hash: string }> => {
 	const signer = provider.getSigner();
-	const contract = new ethers.Contract(
-		'0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A',
-		myNftAbi,
-		signer
-	);
+	const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
 
 	return await contract.mintTo(address, tokenId, amount);
 };
@@ -92,11 +89,7 @@ export const burnToken = async ({
 	amount: number;
 }): Promise<{ hash: string }> => {
 	const signer = provider.getSigner();
-	const contract = new ethers.Contract(
-		'0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A',
-		myNftAbi,
-		signer
-	);
+	const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
 
 	return await contract.burn(address, tokenId, amount);
 };
@@ -107,11 +100,7 @@ export const getBalance = async (): Promise<BigNumber> => {
 
 export const getTokenBalance = async (address: string, tokenId: number): Promise<number> => {
 	const signer = provider.getSigner();
-	const contract = new ethers.Contract(
-		'0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A',
-		myNftAbi,
-		signer
-	);
+	const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
 	const res = await contract.balanceOf(address, tokenId);
 	return res.toNumber();
 };
@@ -121,11 +110,7 @@ export const getTxStatus = async (tx: string) => {
 
 export const getTokenUri = async (tokenId: number): Promise<string> => {
 	const signer = provider.getSigner();
-	const contract = new ethers.Contract(
-		'0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A',
-		myNftAbi,
-		signer
-	);
+	const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
 	const res: string = await contract.uri(tokenId);
 	return res.replace('{id}', tokenId.toString());
 };

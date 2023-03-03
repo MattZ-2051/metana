@@ -36,7 +36,7 @@ const getTxStatusFx = createEffect<{ hash: string }, any>(async ({ hash }) => {
 });
 
 export const getTokenBalanceFx = createEffect<{ address: string }, any>(async ({ address }) => {
-	const tokenIds = [1, 2, 3, 4, 5, 6];
+	const tokenIds = [0, 1, 2, 3, 4, 5, 6];
 	return Promise.all([...tokenIds.map((id) => getTokenBalance(address, id))]);
 });
 
