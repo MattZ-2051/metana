@@ -35,21 +35,26 @@
 				<p>Balance:</p>
 				<p class="ml-4">{parseInt(tokenBalance, 10).toFixed(2)} Matic</p>
 			</div>
-			<div class="mt-8 flex">
-				<Button
-					title="Mint Token"
-					onClick={() =>
-						mintTokenFx({ address: $user ? $user.ethAddress : '', tokenId: 1, amount: 1 })}
-					loading={userTxPending}
-				/>
-				<Input label="Token ID" type="number" />
+			<div class="mt-8 flex flex-col">
+				<p class="text-2xl text-center mb-4">Mint Tokens Id's 0, 1 or 2</p>
+				<div class="flex">
+					<div class="mr-8">
+						<Input label="Token ID" type="number" />
+					</div>
+					<Button
+						title="Mint Token"
+						onClick={() =>
+							mintTokenFx({ address: $user ? $user.ethAddress : '', tokenId: 1, amount: 1 })}
+						loading={userTxPending}
+					/>
+				</div>
 			</div>
 			{#if $user?.nftBalance && ownedTokens}
-				<div class="mt-8 flex flex-col justify-center text-center">
-					<p class="text-3xl mb-4 ">My Tokens</p>
-					<div>
-						<p class="text-2xl">{ownedTokens.map((token) => 'Token ID - ' + token)}</p>
-					</div>
+				<div class="mt-8 flex flex-col items-center justify-center text-center">
+					<p class="text-3xl text-center pb-4">My Tokens</p>
+					<ul>
+						<li class="text-xl">{ownedTokens.map((token) => 'Token ID - ' + token)}</li>
+					</ul>
 				</div>
 			{/if}
 		{/if}

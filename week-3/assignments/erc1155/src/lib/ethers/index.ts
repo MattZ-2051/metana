@@ -6,8 +6,6 @@ import { myNftAbi } from '../../contracts/abi';
 let provider: ethers.providers.Web3Provider;
 
 const contractAddress = '0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A';
-// A Web3Provider wraps a standard Web3 provider, which is
-// what MetaMask injects as window.ethereum into each page
 
 export const connectWallet = async (): Promise<User | null> => {
 	if (typeof window.ethereum !== 'undefined') {
@@ -44,9 +42,6 @@ export const connectWallet = async (): Promise<User | null> => {
 			});
 		}
 		provider.on('network', (newNetwork, oldNetwork) => {
-			// When a Provider makes its initial connection, it emits a "network"
-			// event with a null oldNetwork along with the newNetwork. So, if the
-			// oldNetwork exists, it represents a changing network
 			if (oldNetwork) {
 				window.location.reload();
 			}
@@ -114,3 +109,9 @@ export const getTokenUri = async (tokenId: number): Promise<string> => {
 	const res: string = await contract.uri(tokenId);
 	return res.replace('{id}', tokenId.toString());
 };
+
+// export const forgeToken = async (tokenId: number): Promise<string> => {
+//   const signer = provider.getSigner();
+//   const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
+//   const res: string = await contract.forge(tokenId);
+// }
