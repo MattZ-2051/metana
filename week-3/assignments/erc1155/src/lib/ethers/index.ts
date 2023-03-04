@@ -5,14 +5,14 @@ import { myNftAbi } from '../../contracts/abi';
 
 let provider: ethers.providers.Web3Provider;
 
-const contractAddress = '0x691729fEC623F3A5A5e0359F5fFCe5e4CFa7A42A';
+const contractAddress = '0x3E54A660BA7273C0aF4bE604549C8c47D7E22bD0';
 
 export const connectWallet = async (): Promise<User | null> => {
 	if (typeof window.ethereum !== 'undefined') {
 		provider = new ethers.providers.Web3Provider(window.ethereum, 'any');
 		const mmProvider = await detectEthereumProvider();
 		const network = await provider.getNetwork();
-		if (network.name !== 'maticmum') {
+		if (network.name !== 'goerli') {
 			// TODO: fix when alchemy fixes nodes
 			// try {
 			// 	await window.ethereum.request({
@@ -48,6 +48,7 @@ export const connectWallet = async (): Promise<User | null> => {
 		});
 
 		const balance = await getBalance();
+
 		return {
 			ethAddress: ethAddress[0],
 			provider,
@@ -103,15 +104,8 @@ export const getTxStatus = async (tx: string) => {
 	return await provider.waitForTransaction(tx);
 };
 
-export const getTokenUri = async (tokenId: number): Promise<string> => {
+export const forgeToken = async (tokenId: number): Promise<{ hash: string }> => {
 	const signer = provider.getSigner();
 	const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
-	const res: string = await contract.uri(tokenId);
-	return res.replace('{id}', tokenId.toString());
+	return await contract.forge(tokenId);
 };
-
-// export const forgeToken = async (tokenId: number): Promise<string> => {
-//   const signer = provider.getSigner();
-//   const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
-//   const res: string = await contract.forge(tokenId);
-// }

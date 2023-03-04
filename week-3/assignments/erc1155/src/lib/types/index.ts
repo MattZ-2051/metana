@@ -3,5 +3,5 @@ export type User = {
 	provider: any;
 	balance: string;
 	txPending: boolean;
-	nftBalance?: Record<string, number>;
+	nftBalance?: Record<string, { id: number; amount: any }>;
 };

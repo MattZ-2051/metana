@@ -1,30 +1,40 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
-	import Input from '$lib/components/Input.svelte';
-	import { mintTokenFx, user, walletLoginFx } from '$lib/store';
-	import { getTokenUri } from '$lib/ethers';
+	import { forgeTokenFx, mintTokenFx, user, walletLoginFx } from '$lib/store';
+	import Swal from 'sweetalert2';
 
 	$: tokenBalance = $user && $user.balance;
 	$: userTxPending = $user?.txPending;
-	$: $user?.nftBalance && getTokenInfo();
-	let uris: string[] | undefined = undefined;
-	let ownedTokens: string[] = [];
-	const getTokenInfo = async () => {
-		if ($user?.nftBalance) {
-			const uriArr: string[] = [];
-			for (const key in $user.nftBalance) {
-				if ($user.nftBalance[key] > 0) {
-					ownedTokens.push(key);
-					await getTokenUri(parseInt(key, 10)).then((res) => uriArr.push(res));
-				}
+	$: tokenIdToMint = 0;
+	$: tokenIdToBurn = 0;
+	$: tokenIdToForge = 3;
+	let ownedTokens: { id: number; amount: any }[] = [];
+	$: if ($user?.nftBalance) {
+		for (const key in $user.nftBalance) {
+			if ($user.nftBalance[key].amount > 0) {
+				ownedTokens.push($user.nftBalance[key]);
 			}
 		}
+	}
+
+	const handleMint = () => {
+		if (tokenIdToMint <= 2 && tokenIdToMint >= 0) {
+			mintTokenFx({ address: $user ? $user.ethAddress : '', tokenId: tokenIdToMint, amount: 1 });
+		} else {
+			Swal.fire({
+				icon: 'error',
+				title: 'Oops...',
+				text: 'Token ID must be between 0 and 2'
+			});
+		}
 	};
+
+	const handleBurn = () => {};
 </script>
 
 <div class="h-[80vh] w-full flex justify-center items-center">
 	<div
-		class="flex flex-col bg-white p-8 rounded-lg h-96 w-[600px] items-center justify-center text-black"
+		class="flex flex-col bg-white p-8 rounded-lg h-full w-[600px] items-center justify-center text-black"
 	>
 		{#if !$user}
 			<p class="text-3xl text-center mb-4">Connect Wallet to view balance and mint nfts</p>
@@ -33,27 +43,74 @@
 		{#if tokenBalance}
 			<div class="flex text-3xl items-center">
 				<p>Balance:</p>
-				<p class="ml-4">{parseInt(tokenBalance, 10).toFixed(2)} Matic</p>
+				<p class="ml-4">{parseFloat(tokenBalance).toFixed(4)} Matic</p>
 			</div>
 			<div class="mt-8 flex flex-col">
-				<p class="text-2xl text-center mb-4">Mint Tokens Id's 0, 1 or 2</p>
+				<p class="text-2xl text-center mb-4">Mint Tokens Ids 0 - 2</p>
 				<div class="flex">
 					<div class="mr-8">
-						<Input label="Token ID" type="number" />
+						<input
+							type="number"
+							class="peer block min-h-[auto] w-32 rounded border border-black bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none  text-black [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
+							id="input"
+							bind:value={tokenIdToMint}
+							max={2}
+							min={0}
+						/>
+					</div>
+					<Button title="Mint Token" onClick={handleMint} loading={userTxPending} />
+				</div>
+			</div>
+			<div class="mt-8 flex flex-col">
+				<p class="text-2xl text-center mb-4">Burn Token</p>
+				<div class="flex">
+					<div class="mr-8">
+						<input
+							type="number"
+							class="peer block min-h-[auto] w-32 rounded border border-black bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none  text-black [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
+							id="input"
+							bind:value={tokenIdToBurn}
+							max={6}
+							min={0}
+						/>
 					</div>
 					<Button
-						title="Mint Token"
+						title="Burn Token"
 						onClick={() =>
 							mintTokenFx({ address: $user ? $user.ethAddress : '', tokenId: 1, amount: 1 })}
 						loading={userTxPending}
 					/>
 				</div>
 			</div>
+			<div class="mt-8 flex flex-col">
+				<p class="text-2xl text-center mb-4">Forge Token 3 - 6</p>
+				<div class="flex">
+					<div class="mr-8">
+						<input
+							type="number"
+							class="peer block min-h-[auto] w-32 rounded border border-black bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none  text-black [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
+							id="input"
+							bind:value={tokenIdToForge}
+							max={6}
+							min={3}
+						/>
+					</div>
+					<Button
+						title="Forge Token"
+						onClick={() => forgeTokenFx({ tokenId: tokenIdToForge })}
+						loading={userTxPending}
+					/>
+				</div>
+			</div>
 			{#if $user?.nftBalance && ownedTokens}
-				<div class="mt-8 flex flex-col items-center justify-center text-center">
-					<p class="text-3xl text-center pb-4">My Tokens</p>
-					<ul>
-						<li class="text-xl">{ownedTokens.map((token) => 'Token ID - ' + token)}</li>
+				<div class="mt-8 flex flex-col items-center justify-center text-center ">
+					<p class="text-2xl text-center pb-4">My Tokens</p>
+					<ul class="max-h-32 overflow-auto px-8">
+						<li class="text-xl">
+							{#each ownedTokens as token}
+								<p>{`ID - ${token.id} Amount - ${token.amount}`}</p>
+							{/each}
+						</li>
 					</ul>
 				</div>
 			{/if}

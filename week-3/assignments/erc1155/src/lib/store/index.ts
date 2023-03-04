@@ -1,4 +1,11 @@
-import { burnToken, connectWallet, getTokenBalance, getTxStatus, mintToken } from '$lib/ethers';
+import {
+	burnToken,
+	connectWallet,
+	forgeToken,
+	getTokenBalance,
+	getTxStatus,
+	mintToken
+} from '$lib/ethers';
 import type { User } from '$lib/types';
 import { createEffect, createEvent, createStore } from 'effector';
 import Swal from 'sweetalert2';
@@ -6,7 +13,7 @@ import Swal from 'sweetalert2';
 const walletLogin = createEvent<User>();
 
 const updateTxPending = createEvent<boolean>();
-const updateUserTokens = createEvent<Record<string, number>>();
+const updateUserTokens = createEvent<Record<string, { id: number; amount: any }>>();
 
 export const walletLoginFx = createEffect<void, User>(async () => {
 	const res = await connectWallet();
@@ -31,6 +38,12 @@ export const mintTokenFx = createEffect<
 	return await mintToken({ address, tokenId, amount });
 });
 
+export const forgeTokenFx = createEffect<{ tokenId: number }, { hash: string }>(
+	async ({ tokenId }) => {
+		return await forgeToken(tokenId);
+	}
+);
+
 const getTxStatusFx = createEffect<{ hash: string }, any>(async ({ hash }) => {
 	return await getTxStatus(hash);
 });
@@ -41,18 +54,23 @@ export const getTokenBalanceFx = createEffect<{ address: string }, any>(async ({
 });
 
 getTokenBalanceFx.doneData.watch((res) => {
-	const tokenMap: Record<string, number> = {};
+	const tokenMap: Record<string, { id: number; amount: any }> = {};
+
 	for (let i = 0; i < res.length; i++) {
 		if (res[i] > 0) {
-			tokenMap[(i + 1).toString()] = res[i];
+			tokenMap[i.toString()] = { id: i, amount: res[i] };
 		}
 	}
-	console.log('token', tokenMap);
 	updateUserTokens(tokenMap);
 });
 
 burnTokenFx.doneData.watch((res) => {
 	getTxStatusFx({ hash: res.hash as string });
+	Swal.fire({
+		icon: 'success',
+		title: 'Success',
+		text: 'Burn transaction sent'
+	});
 });
 
 burnTokenFx.failData.watch((res) => {
@@ -63,11 +81,25 @@ burnTokenFx.failData.watch((res) => {
 	});
 });
 
-mintTokenFx.doneData.watch((res) => {
+forgeTokenFx.doneData.watch((res) => {
 	getTxStatusFx({ hash: res.hash as string });
+	Swal.fire({
+		icon: 'success',
+		title: 'Success',
+		text: 'Forging in progress'
+	});
 });
 
-getTxStatusFx.doneData.watch((res) => {
+mintTokenFx.doneData.watch((res) => {
+	getTxStatusFx({ hash: res.hash as string });
+	Swal.fire({
+		icon: 'success',
+		title: 'Success',
+		text: 'Mint transaction sent'
+	});
+});
+
+getTxStatusFx.doneData.watch(() => {
 	updateTxPending(false);
 });
 
@@ -84,11 +116,12 @@ getTxStatusFx.pending.watch((res) => {
 	updateTxPending(res);
 });
 
-mintTokenFx.failData.watch(() => {
+mintTokenFx.failData.watch((error) => {
+	const message = error?.error?.message as string;
 	Swal.fire({
 		icon: 'error',
 		title: 'Oops...',
-		text: 'Error minting'
+		text: message
 	});
 });
 

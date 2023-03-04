@@ -40,7 +40,6 @@ contract Forge {
 
     function mintTo(address _to, uint256 _id, uint256 _amount) external {
       require(_id <= 2, "can only mint token ids 0-2 with this function");
-      require(_id <= 6, "token id not in collection");
       if ((_id == 0 || _id == 1 || _id == 2) && addressToMintTime[msg.sender] != 0) {
         require(addressToMintTime[msg.sender] + 1 minutes <= block.timestamp, "must wait 1 minute before minting again");
       }
@@ -85,9 +84,14 @@ contract Forge {
       if (_tokenId == 6) {
         uint256[] memory _tokenIds = new uint256[](2);
         _tokenIds[0] = 0;
-        _tokenIds[1] = 2;
+        _tokenIds[1] = 1;
+        _tokenIds[2] = 2;
         myToken.burnBatch(msg.sender, _tokenIds, _amounts);
         myToken.mintTo(msg.sender, _tokenId, 1);
       }
+    }
+
+    function balanceOf(address account, uint256 id) public view virtual returns (uint256) {
+      return myToken.balanceOf(account, id);
     }
 }
