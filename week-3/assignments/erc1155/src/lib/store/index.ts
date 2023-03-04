@@ -73,7 +73,7 @@ burnTokenFx.doneData.watch((res) => {
 	});
 });
 
-burnTokenFx.failData.watch((res) => {
+burnTokenFx.failData.watch(() => {
 	Swal.fire({
 		icon: 'error',
 		title: 'Oops...',
@@ -90,6 +90,18 @@ forgeTokenFx.doneData.watch((res) => {
 	});
 });
 
+forgeTokenFx.failData.watch((error) => {
+	let message = error?.error?.message as string;
+	if (message.includes('burn amount')) {
+		message = 'You dont own necessary tokens to forge this token';
+	}
+	Swal.fire({
+		icon: 'error',
+		title: 'Oops...',
+		text: message
+	});
+});
+
 mintTokenFx.doneData.watch((res) => {
 	getTxStatusFx({ hash: res.hash as string });
 	Swal.fire({
@@ -99,8 +111,9 @@ mintTokenFx.doneData.watch((res) => {
 	});
 });
 
-getTxStatusFx.doneData.watch(() => {
+getTxStatusFx.doneData.watch((res) => {
 	updateTxPending(false);
+	getTokenBalanceFx({ address: res.from });
 });
 
 getTxStatusFx.failData.watch(() => {

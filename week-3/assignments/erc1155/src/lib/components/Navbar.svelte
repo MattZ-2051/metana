@@ -1,6 +1,11 @@
 <script>
 	import { user, walletLoginFx } from '$lib/store';
+	import { onMount } from 'svelte';
 	import Button from './Button.svelte';
+
+	onMount(() => {
+		walletLoginFx();
+	});
 </script>
 
 <nav
@@ -12,7 +17,8 @@
 			<p class="pr-4">
 				{$user.ethAddress}
 			</p>
+		{:else}
+			<Button title="Connect Wallet" onClick={walletLoginFx} />
 		{/if}
-		<Button title="Connect Wallet" onClick={walletLoginFx} />
 	</div>
 </nav>

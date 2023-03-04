@@ -1,6 +1,10 @@
+<script lang="ts">
+	export let styles: string;
+</script>
+
 <div class="flex items-center justify-center">
 	<div
-		class="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+		class={`inline-block animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite] ${styles}`}
 		role="status"
 	>
 		<span

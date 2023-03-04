@@ -5,7 +5,7 @@ import { myNftAbi } from '../../contracts/abi';
 
 let provider: ethers.providers.Web3Provider;
 
-const contractAddress = '0x3E54A660BA7273C0aF4bE604549C8c47D7E22bD0';
+const contractAddress = '0xCEe485a10F675Bfa681021630937d77F77d2FA38';
 
 export const connectWallet = async (): Promise<User | null> => {
 	if (typeof window.ethereum !== 'undefined') {
