@@ -18,8 +18,12 @@ contract TokenSale is ERC20 {
 
     function createTokens() external payable {
         require(msg.value >= 1 ether, "Must send at least 1 ETH");
-        require(totalSupply() <= maxSupply, "max supply reached");
-        _mint(msg.sender, 1000 * (10 ** 18));
+        uint256 tokensToMint = 1000 * (10 ** 18);
+        require(
+            totalSupply() + tokensToMint <= maxSupply,
+            "max supply reached"
+        );
+        _mint(msg.sender, tokensToMint);
     }
 
     receive() external payable {}
