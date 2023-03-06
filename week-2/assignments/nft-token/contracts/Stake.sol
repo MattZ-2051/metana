@@ -137,11 +137,11 @@ contract Stake is Ownable {
         uint256 tokenId
     ) external onlyTokenOwner(tokenId) {
         Staker storage stakerInfo = stakers[msg.sender];
-        require(stakerInfo.rewards > 0, "no rewards to withdraw");
         require(
-            (stakerInfo.lastUpdateTime + rewardTime) < block.timestamp,
+            (stakerInfo.lastUpdateTime + rewardTime) <= block.timestamp,
             "need to wait 24 hrs"
         );
+        require(_getRewards(stakerInfo) > 0, "no rewards to withdraw");
         Token.createTokens(msg.sender, _getRewards(stakerInfo));
         stakerInfo.lastUpdateTime = block.timestamp;
         delete stakerInfo.rewards;
