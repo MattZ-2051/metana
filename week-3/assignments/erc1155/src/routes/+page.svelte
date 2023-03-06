@@ -1,19 +1,20 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
-	import { burnTokenFx, forgeTokenFx, mintTokenFx, user, walletLoginFx } from '$lib/store';
+	import { forgeTokenFx, mintTokenFx, tradeTokenFx, user, walletLoginFx } from '$lib/store';
 	import Swal from 'sweetalert2';
 
 	$: tokenBalance = $user && $user.balance;
 	$: userTxPending = $user?.txPending;
 	$: tokenIdToMint = 0;
-	$: tokenIdToBurn = 0;
 	$: tokenIdToForge = 3;
+	$: tokenIdToTrade = 0;
+	$: tokenIdToReceive = 0;
 	$: ownedTokens = [] as { id: number; amount: any }[];
 	$: if ($user?.nftBalance && $user) {
-		for (let key in $user.nftBalance) {
+		for (const key in $user.nftBalance) {
 			if ($user.nftBalance[key].amount > 0 && $user.nftBalance) {
-				if (!!ownedTokens.find((token) => token.id === $user.nftBalance[key].id)) {
+				if (!!ownedTokens.find((token) => token.id === $user?.nftBalance?.[key].id)) {
 					const token = ownedTokens.find((token) =>
 						$user?.nftBalance ? token.id === $user.nftBalance[key].id : false
 					);
@@ -25,11 +26,12 @@
 				}
 			}
 		}
+		ownedTokens = ownedTokens;
 	}
 
 	const handleMint = () => {
 		if (tokenIdToMint <= 2 && tokenIdToMint >= 0) {
-			mintTokenFx({ address: $user ? $user.ethAddress : '', tokenId: tokenIdToMint, amount: 1 });
+			mintTokenFx({ tokenId: tokenIdToMint });
 		} else {
 			Swal.fire({
 				icon: 'error',
@@ -39,8 +41,8 @@
 		}
 	};
 
-	const handleBurn = () => {
-		burnTokenFx({ address: $user ? $user.ethAddress : '', tokenId: tokenIdToBurn, amount: 1 });
+	const handleTrade = () => {
+		tradeTokenFx({ tokenToTrade: tokenIdToTrade, tokenToReceive: tokenIdToReceive });
 	};
 </script>
 
@@ -78,19 +80,30 @@
 					</div>
 				</div>
 				<div class="mt-8 flex flex-col">
-					<p class="text-2xl text-center mb-4">Burn Token</p>
-					<div class="flex">
+					<p class="text-2xl text-center mb-4">Trade Token</p>
+					<div class="flex items-center">
+						<div class="">
+							<input
+								type="number"
+								class="peer block min-h-[auto] w-32 rounded border border-black bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none  text-black [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
+								id="input"
+								bind:value={tokenIdToTrade}
+								max={6}
+								min={0}
+							/>
+						</div>
+						<p class="text-xl text-center px-4">For</p>
 						<div class="mr-8">
 							<input
 								type="number"
 								class="peer block min-h-[auto] w-32 rounded border border-black bg-transparent py-[0.32rem] px-3 leading-[1.6] outline-none transition-all duration-200 ease-linear focus:placeholder:opacity-100 data-[te-input-state-active]:placeholder:opacity-100 motion-reduce:transition-none  text-black [&:not([data-te-input-placeholder-active])]:placeholder:opacity-0"
 								id="input"
-								bind:value={tokenIdToBurn}
-								max={6}
+								bind:value={tokenIdToReceive}
+								max={2}
 								min={0}
 							/>
 						</div>
-						<Button title="Burn Token" onClick={handleBurn} />
+						<Button title="Trade Token" onClick={handleTrade} />
 					</div>
 				</div>
 				<div class="mt-8 flex flex-col">
@@ -114,9 +127,11 @@
 						<p class="text-2xl text-center pb-4">My Tokens</p>
 						<ul class="max-h-32 overflow-auto px-8">
 							<li class="text-xl">
-								{#each ownedTokens as token}
-									<p>{`ID - ${token.id} Amount - ${token.amount}`}</p>
-								{/each}
+								{#key ownedTokens}
+									{#each ownedTokens as token}
+										<p>{`ID - ${token.id} Amount - ${token.amount}`}</p>
+									{/each}
+								{/key}
 							</li>
 						</ul>
 					</div>

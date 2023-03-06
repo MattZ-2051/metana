@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
+
 pragma solidity ^0.8.1;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
@@ -15,13 +16,13 @@ contract MyToken is ERC1155URIStorage {
       _;
     }
 
-    function mintTo(address _to, uint256 _id, uint256 _amount) external onlyOwner {
+    function mintTo(address _to, uint256 _id) external onlyOwner {
       require(_id <= 6, "token id not in collection");
-      _mint(_to, _id, _amount, "");
+      _mint(_to, _id, 1, "");
     }
 
-    function burn(address _from, uint256 _id, uint256 _amount) external onlyOwner {
-      _burn(_from, _id, _amount);
+    function burn(address _from, uint256 _id) external onlyOwner {
+      _burn(_from, _id, 1);
     }
 
     function burnBatch(address _from, uint256[] memory _ids, uint256[] memory _amounts) external onlyOwner {
@@ -31,63 +32,73 @@ contract MyToken is ERC1155URIStorage {
 
 contract Forge {
     MyToken public immutable myToken;
-    uint256[] public tokenIds = [0,1,2,3,4,5,6];
-    mapping(address => uint256) public addressToMintTime;
+    uint256 public mintTimer = 0;
 
     constructor() {
       myToken = new MyToken(address(this));
     }
 
-    function mintTo(address _to, uint256 _id, uint256 _amount) external {
+    function mint(uint256 _id) external {
       require(_id <= 2, "can only mint token ids 0-2 with this function");
-      if ((_id == 0 || _id == 1 || _id == 2) && addressToMintTime[msg.sender] != 0) {
-        require(addressToMintTime[msg.sender] + 1 minutes <= block.timestamp, "must wait 1 minute before minting again");
-      }
-      myToken.mintTo(_to, _id, _amount);
-      addressToMintTime[msg.sender] = block.timestamp;
+      require(mintTimer + 1 minutes <= block.timestamp, "must wait 1 minute before minting again");
+      myToken.mintTo(msg.sender, _id);
+      mintTimer = block.timestamp;
     }
 
-    function burn(address _from, uint256 _id, uint256 _amount) external {
-      require(_id <= 6, "token id not in collection");
-      myToken.burn(_from, _id, _amount);
+    function trade(uint256 _tokenToTrade, uint256 _tokenToReceive) external {
+      require(_tokenToReceive <= 2, "can only trade for tokens 0 - 2");
+      require(_tokenToTrade >= 0 && _tokenToTrade <= 3, "token id not in collection");
+      require(_tokenToTrade != _tokenToReceive, "cannont trade for the same token");
+      myToken.burn(msg.sender, _tokenToTrade);
+      myToken.mintTo(msg.sender, _tokenToReceive);
     }
 
     function forge(uint256 _tokenId) external {
       require(_tokenId >= 3 && _tokenId <= 6, "id must be 3-6");
-      uint256[] memory _amounts = new uint256[](2);
-      _amounts[0] = 1;
-      _amounts[1] = 1;
       if (_tokenId == 3) {
         uint256[] memory _tokenIds = new uint256[](2);
+        uint256[] memory _amounts = new uint256[](2);
+        _amounts[0] = 1;
+        _amounts[1] = 1;
         _tokenIds[0] = 0;
         _tokenIds[1] = 1;
         myToken.burnBatch(msg.sender, _tokenIds, _amounts);
-        myToken.mintTo(msg.sender, _tokenId, 1);
+        myToken.mintTo(msg.sender, _tokenId);
       }
 
       if (_tokenId == 4) {
         uint256[] memory _tokenIds = new uint256[](2);
+        uint256[] memory _amounts = new uint256[](2);
+        _amounts[0] = 1;
+        _amounts[1] = 1;
         _tokenIds[0] = 1;
         _tokenIds[1] = 2;
         myToken.burnBatch(msg.sender, _tokenIds, _amounts);
-        myToken.mintTo(msg.sender, _tokenId, 1);
+        myToken.mintTo(msg.sender, _tokenId);
       }
 
       if (_tokenId == 5) {
         uint256[] memory _tokenIds = new uint256[](2);
+        uint256[] memory _amounts = new uint256[](2);
+        _amounts[0] = 1;
+        _amounts[1] = 1;
         _tokenIds[0] = 0;
         _tokenIds[1] = 2;
         myToken.burnBatch(msg.sender, _tokenIds, _amounts);
-        myToken.mintTo(msg.sender, _tokenId, 1);
+        myToken.mintTo(msg.sender, _tokenId);
       }
 
       if (_tokenId == 6) {
-        uint256[] memory _tokenIds = new uint256[](2);
+        uint256[] memory _tokenIds = new uint256[](3);
+        uint256[] memory _amounts = new uint256[](3);
+        _amounts[0] = 1;
+        _amounts[1] = 1;
+        _amounts[2] = 1;
         _tokenIds[0] = 0;
         _tokenIds[1] = 1;
         _tokenIds[2] = 2;
         myToken.burnBatch(msg.sender, _tokenIds, _amounts);
-        myToken.mintTo(msg.sender, _tokenId, 1);
+        myToken.mintTo(msg.sender, _tokenId);
       }
     }
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	export let styles: string;
+	export let styles: string | undefined = undefined;
 </script>
 
 <div class="flex items-center justify-center">
