@@ -36,13 +36,9 @@ contract PartialRefund is ERC20 {
 
     function sellBack(uint256 amount) external {
         require(balanceOf(msg.sender) >= amount, "Not enough tokens");
-        require(
-            address(this).balance >= 0.5 ether,
-            "Not enough eth in contract"
-        );
         if (amount >= 1000 * (10 ** 18)) {
-            uint256 ethToTransfer = ((amount / (1000 * (10 ** 18))) *
-                (10 ** 18)) / 2;
+            uint256 amountEth = amount / 1000 ether;
+            uint256 ethToTransfer = amountEth * 500000000000000000;
             require(
                 address(this).balance >= ethToTransfer,
                 "Not enough eth in contract sell 1000 less tokens"
