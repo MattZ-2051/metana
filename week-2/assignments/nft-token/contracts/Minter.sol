@@ -8,19 +8,25 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MyNft is ERC721URIStorage, Ownable {
+contract MyNft is ERC721URIStorage {
     using Counters for Counters.Counter;
     Counters.Counter private currentTokenId;
 
     uint256 public constant TOTAL_SUPPLY = 10;
+    address public owner;
 
-    constructor() ERC721("MyNFT", "MNT") {
+    constructor(address _owner) ERC721("MyNFT", "MNT") {
+        owner = _owner;
         baseTokenURI = "https://gateway.pinata.cloud/ipfs/Qmb6BJT1bjo37BubRqc5uRoqRWd6u4cJREAeoaJAfZq1j3/";
     }
 
     string public baseTokenURI;
 
     function mintTo(address recipient) public returns (uint256) {
+        require(
+            msg.sender == owner,
+            "only minter contract can call this function"
+        );
         uint256 tokenId = currentTokenId.current();
         require(tokenId < TOTAL_SUPPLY, "Max supply reached");
         currentTokenId.increment();
@@ -90,9 +96,9 @@ contract Minter is Ownable {
     TestToken public immutable token;
     MyNft public immutable nft;
 
-    constructor(address payable _tokenAddress, address payable _nftAddress) {
+    constructor(address payable _tokenAddress) {
         token = TestToken(_tokenAddress);
-        nft = MyNft(_nftAddress);
+        nft = new MyNft(address(this));
     }
 
     function mintNft(uint256 amount) external {
@@ -104,7 +110,7 @@ contract Minter is Ownable {
             token.balanceOf(msg.sender) >= amount,
             "not enough tokens to mint"
         );
-        token.transferFrom(msg.sender, address(token), amount);
+        token.transferFrom(msg.sender, address(this), amount);
         nft.mintTo(msg.sender);
     }
 }
