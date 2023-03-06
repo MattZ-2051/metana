@@ -15,8 +15,13 @@
 	<div class="flex w-full flex-wrap items-center justify-end">
 		{#if $user && $user.ethAddress}
 			<p class="pr-4">
+				My Address:
 				{$user.ethAddress}
 			</p>
+			<a
+				href="https://testnets.opensea.io/collection/unidentified-contract-6841"
+				class="text-white mr-4 underline">Link to Contract on Opensea</a
+			>
 		{:else}
 			<Button title="Connect Wallet" onClick={walletLoginFx} />
 		{/if}

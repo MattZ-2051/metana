@@ -5,7 +5,7 @@ import { myNftAbi } from '../../contracts/abi';
 
 let provider: ethers.providers.Web3Provider;
 
-const contractAddress = '0xCEe485a10F675Bfa681021630937d77F77d2FA38';
+const contractAddress = '0x711b968Deb7FF92ccEba53758670d5182ce61aA0';
 
 export const connectWallet = async (): Promise<User | null> => {
 	if (typeof window.ethereum !== 'undefined') {
@@ -60,34 +60,29 @@ export const connectWallet = async (): Promise<User | null> => {
 	}
 };
 
-export const mintToken = async ({
-	tokenId,
-	address,
-	amount
-}: {
-	tokenId: number;
-	address: string;
-	amount: number;
-}): Promise<{ hash: string }> => {
+export const getMintTime = async (): Promise<BigNumber> => {
 	const signer = provider.getSigner();
 	const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
-
-	return await contract.mintTo(address, tokenId, amount);
+	return await contract.mintTimer();
 };
 
-export const burnToken = async ({
-	tokenId,
-	address,
-	amount
-}: {
-	tokenId: number;
-	address: string;
-	amount: number;
-}): Promise<{ hash: string }> => {
+export const mintToken = async ({ tokenId }: { tokenId: number }): Promise<{ hash: string }> => {
 	const signer = provider.getSigner();
 	const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
 
-	return await contract.burn(address, tokenId, amount);
+	return await contract.mint(tokenId);
+};
+
+export const tradeToken = async ({
+	tokenToTrade,
+	tokenToReceive
+}: {
+	tokenToTrade: number;
+	tokenToReceive: number;
+}) => {
+	const signer = provider.getSigner();
+	const contract = new ethers.Contract(contractAddress, myNftAbi, signer);
+	return await contract.trade(tokenToTrade, tokenToReceive);
 };
 export const getBalance = async (): Promise<BigNumber> => {
 	const signer = provider.getSigner();

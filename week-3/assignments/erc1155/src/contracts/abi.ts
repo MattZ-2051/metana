@@ -2,29 +2,6 @@ export const myNftAbi = [
 	{
 		inputs: [
 			{
-				internalType: 'address',
-				name: '_from',
-				type: 'address'
-			},
-			{
-				internalType: 'uint256',
-				name: '_id',
-				type: 'uint256'
-			},
-			{
-				internalType: 'uint256',
-				name: '_amount',
-				type: 'uint256'
-			}
-		],
-		name: 'burn',
-		outputs: [],
-		stateMutability: 'nonpayable',
-		type: 'function'
-	},
-	{
-		inputs: [
-			{
 				internalType: 'uint256',
 				name: '_tokenId',
 				type: 'uint256'
@@ -38,22 +15,30 @@ export const myNftAbi = [
 	{
 		inputs: [
 			{
-				internalType: 'address',
-				name: '_to',
-				type: 'address'
-			},
-			{
 				internalType: 'uint256',
 				name: '_id',
 				type: 'uint256'
+			}
+		],
+		name: 'mint',
+		outputs: [],
+		stateMutability: 'nonpayable',
+		type: 'function'
+	},
+	{
+		inputs: [
+			{
+				internalType: 'uint256',
+				name: '_tokenToTrade',
+				type: 'uint256'
 			},
 			{
 				internalType: 'uint256',
-				name: '_amount',
+				name: '_tokenToReceive',
 				type: 'uint256'
 			}
 		],
-		name: 'mintTo',
+		name: 'trade',
 		outputs: [],
 		stateMutability: 'nonpayable',
 		type: 'function'
@@ -62,25 +47,6 @@ export const myNftAbi = [
 		inputs: [],
 		stateMutability: 'nonpayable',
 		type: 'constructor'
-	},
-	{
-		inputs: [
-			{
-				internalType: 'address',
-				name: '',
-				type: 'address'
-			}
-		],
-		name: 'addressToMintTime',
-		outputs: [
-			{
-				internalType: 'uint256',
-				name: '',
-				type: 'uint256'
-			}
-		],
-		stateMutability: 'view',
-		type: 'function'
 	},
 	{
 		inputs: [
@@ -108,31 +74,25 @@ export const myNftAbi = [
 	},
 	{
 		inputs: [],
-		name: 'myToken',
+		name: 'mintTimer',
 		outputs: [
 			{
-				internalType: 'contract MyToken',
+				internalType: 'uint256',
 				name: '',
-				type: 'address'
+				type: 'uint256'
 			}
 		],
 		stateMutability: 'view',
 		type: 'function'
 	},
 	{
-		inputs: [
-			{
-				internalType: 'uint256',
-				name: '',
-				type: 'uint256'
-			}
-		],
-		name: 'tokenIds',
+		inputs: [],
+		name: 'myToken',
 		outputs: [
 			{
-				internalType: 'uint256',
+				internalType: 'contract MyToken',
 				name: '',
-				type: 'uint256'
+				type: 'address'
 			}
 		],
 		stateMutability: 'view',

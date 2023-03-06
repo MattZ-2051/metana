@@ -1,13 +1,15 @@
 import {
-	burnToken,
+	tradeToken,
 	connectWallet,
 	forgeToken,
 	getTokenBalance,
 	getTxStatus,
-	mintToken
+	mintToken,
+	getMintTime
 } from '$lib/ethers';
 import type { User } from '$lib/types';
 import { createEffect, createEvent, createStore } from 'effector';
+import { ethers, type BigNumber } from 'ethers';
 import Swal from 'sweetalert2';
 
 const walletLogin = createEvent<User>();
@@ -24,19 +26,21 @@ export const walletLoginFx = createEffect<void, User>(async () => {
 	}
 });
 
-export const burnTokenFx = createEffect<
-	{ address: string; tokenId: number; amount: number },
+export const tradeTokenFx = createEffect<
+	{
+		tokenToTrade: number;
+		tokenToReceive: number;
+	},
 	{ hash: string }
->(async ({ address, tokenId, amount }) => {
-	return await burnToken({ address, tokenId, amount });
+>(async ({ tokenToTrade, tokenToReceive }) => {
+	return await tradeToken({ tokenToTrade, tokenToReceive });
 });
 
-export const mintTokenFx = createEffect<
-	{ address: string; tokenId: number; amount: number },
-	{ hash: string }
->(async ({ address, tokenId, amount }) => {
-	return await mintToken({ address, tokenId, amount });
-});
+export const mintTokenFx = createEffect<{ tokenId: number }, { hash: string }>(
+	async ({ tokenId }) => {
+		return await mintToken({ tokenId });
+	}
+);
 
 export const forgeTokenFx = createEffect<{ tokenId: number }, { hash: string }>(
 	async ({ tokenId }) => {
@@ -53,6 +57,10 @@ export const getTokenBalanceFx = createEffect<{ address: string }, any>(async ({
 	return Promise.all([...tokenIds.map((id) => getTokenBalance(address, id))]);
 });
 
+export const getMintTimeFx = createEffect<void, BigNumber>(async () => {
+	return await getMintTime();
+});
+
 getTokenBalanceFx.doneData.watch((res) => {
 	const tokenMap: Record<string, { id: number; amount: any }> = {};
 
@@ -64,7 +72,7 @@ getTokenBalanceFx.doneData.watch((res) => {
 	updateUserTokens(tokenMap);
 });
 
-burnTokenFx.doneData.watch((res) => {
+tradeTokenFx.doneData.watch((res) => {
 	getTxStatusFx({ hash: res.hash as string });
 	Swal.fire({
 		icon: 'success',
@@ -73,11 +81,19 @@ burnTokenFx.doneData.watch((res) => {
 	});
 });
 
-burnTokenFx.failData.watch(() => {
+tradeTokenFx.failData.watch((error) => {
+	let errorMessage = 'Error trading token';
+	if (error?.error?.message.includes('exceeds balance')) {
+		errorMessage = "You don't own necessary tokens to trade";
+	}
+	if (error?.error?.message) {
+		errorMessage = error.error.message;
+	}
+
 	Swal.fire({
 		icon: 'error',
 		title: 'Oops...',
-		text: 'Error burning'
+		text: errorMessage
 	});
 });
 
@@ -130,7 +146,7 @@ getTxStatusFx.pending.watch((res) => {
 });
 
 mintTokenFx.failData.watch((error) => {
-	const message = error?.error?.message as string;
+	const message = (error?.error?.message as string) || 'Error Minting';
 	Swal.fire({
 		icon: 'error',
 		title: 'Oops...',
@@ -152,7 +168,7 @@ walletLoginFx.failData.watch((error) => {
 	Swal.fire({
 		icon: 'error',
 		title: 'Oops...',
-		text: error as unknown as string
+		text: error.message as unknown as string
 	});
 });
 
