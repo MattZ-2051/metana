@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract PartialRefund is ERC20 {
     address public owner = msg.sender;
     uint256 maxSupply = 100000000 * (10 ** 18);
+    event Log(string message);
 
     constructor(uint256 initialSupply) ERC20("test", "TST") {
         _mint(msg.sender, initialSupply);
@@ -20,8 +21,8 @@ contract PartialRefund is ERC20 {
         payable(owner).transfer(address(this).balance);
     }
 
-    function withdrawTokens() external onlyOwner {
-        this.transfer(owner, balanceOf(address(this)));
+    function withdrawTokens() external onlyOwner returns (bool) {
+        return this.transfer(owner, balanceOf(address(this)));
     }
 
     function createTokens() external payable {
@@ -37,7 +38,7 @@ contract PartialRefund is ERC20 {
                 (10 ** 18)) / 2;
             require(
                 address(this).balance >= ethToTransfer,
-                "Not enough eth in contract sell 1000 less tokens"
+                "Not enough eth in contract sell less tokens"
             );
             payable(msg.sender).transfer(ethToTransfer);
         }
@@ -46,5 +47,7 @@ contract PartialRefund is ERC20 {
 
     receive() external payable {}
 
-    fallback() external payable {}
+    fallback() external payable {
+        emit Log("fallback called");
+    }
 }

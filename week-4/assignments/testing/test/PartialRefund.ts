@@ -6,7 +6,9 @@ describe("PartialRefund", function () {
   async function deployPartialRefund() {
     const [owner, otherAccount] = await ethers.getSigners();
     const PartialRefund = await ethers.getContractFactory("PartialRefund");
-    const contract = await PartialRefund.deploy(ethers.BigNumber.from(1000));
+    const contract = await PartialRefund.deploy(
+      ethers.utils.parseEther("1000")
+    );
     const provider = ethers.provider;
     const tenEther = ethers.utils.hexStripZeros(
       ethers.utils.parseEther("10").toHexString()
@@ -16,15 +18,18 @@ describe("PartialRefund", function () {
   }
 
   it("should set the right owner", async function () {
-    const { contract, owner } = await loadFixture(deployPartialRefund);
+    const { contract, owner, otherAccount } = await loadFixture(
+      deployPartialRefund
+    );
 
+    expect(await contract.owner()).to.not.equal(otherAccount.address);
     expect(await contract.owner()).to.equal(owner.address);
   });
 
   it("should be deployed with erc token initialy supply sent to contract creator", async () => {
     const { contract, owner } = await loadFixture(deployPartialRefund);
     const userBalance = await contract.balanceOf(owner.address);
-    expect(userBalance).to.equal(ethers.BigNumber.from(1000));
+    expect(userBalance).to.equal(ethers.utils.parseEther("1000"));
   });
 
   it("should let contract owner withdraw eth from contract", async () => {
@@ -148,5 +153,88 @@ describe("PartialRefund", function () {
       ethers.utils.parseEther("1.9"),
       ethers.utils.parseEther("2")
     );
+  });
+
+  it("should transfer tokens to contract address when they are sold back", async () => {
+    const { contract, owner, otherAccount } = await loadFixture(
+      deployPartialRefund
+    );
+    const tx = await contract
+      .connect(otherAccount)
+      .createTokens({ value: ethers.utils.parseEther("1") });
+    await tx.wait();
+    const approvalTx = await contract
+      .connect(otherAccount)
+      .approve(otherAccount.address, ethers.utils.parseEther("2000"));
+
+    await approvalTx.wait();
+    await contract
+      .connect(otherAccount)
+      .sellBack(ethers.utils.parseEther("1000"));
+
+    expect(await contract.balanceOf(contract.address)).to.be.equal(
+      ethers.utils.parseEther("1000")
+    );
+  });
+
+  it("should fail if the contract doesn't have enough tokens to transfer back", async () => {
+    const { contract, owner, otherAccount } = await loadFixture(
+      deployPartialRefund
+    );
+    const createTx = await contract
+      .connect(otherAccount)
+      .createTokens({ value: ethers.utils.parseEther("1") });
+    await createTx.wait();
+
+    const approvalTx = await contract
+      .connect(otherAccount)
+      .approve(otherAccount.address, ethers.utils.parseEther("2000"));
+    await approvalTx.wait();
+
+    const withdrawTx = await contract.connect(owner).withdrawEth();
+    await withdrawTx.wait();
+
+    await expect(
+      contract.connect(otherAccount).sellBack(ethers.utils.parseEther("1000"))
+    ).to.be.revertedWith("Not enough eth in contract sell less tokens");
+  });
+
+  it("should let owner receive all erc tokens from contract", async () => {
+    const { contract, owner, otherAccount } = await loadFixture(
+      deployPartialRefund
+    );
+    const tx = await contract
+      .connect(otherAccount)
+      .createTokens({ value: ethers.utils.parseEther("1") });
+    await tx.wait();
+    const approvalTx = await contract
+      .connect(otherAccount)
+      .approve(otherAccount.address, ethers.utils.parseEther("2000"));
+
+    await approvalTx.wait();
+    await contract
+      .connect(otherAccount)
+      .sellBack(ethers.utils.parseEther("1000"));
+    await contract.withdrawTokens();
+    expect(await contract.balanceOf(owner.address)).to.be.equal(
+      ethers.utils.parseEther("2000")
+    );
+  });
+
+  it("should not let non owner withdraw tokens from contract", async () => {
+    const { contract, otherAccount } = await loadFixture(deployPartialRefund);
+    await expect(
+      contract.connect(otherAccount).withdrawTokens()
+    ).to.be.revertedWith("only owner can withdraw");
+  });
+
+  it("should invoke the fallback function", async () => {
+    const { contract, owner } = await loadFixture(deployPartialRefund);
+
+    const tx = owner.sendTransaction({
+      to: contract.address,
+      data: "0x1234",
+    });
+    await expect(tx).to.emit(contract, "Log").withArgs("fallback called");
   });
 });
