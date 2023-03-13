@@ -4,6 +4,7 @@ pragma solidity ^0.8.1;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155URIStorage.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract MyToken is ERC1155URIStorage {
     address public immutable owner;
@@ -40,7 +41,7 @@ contract MyToken is ERC1155URIStorage {
     }
 }
 
-contract Forge {
+contract Forge is ReentrancyGuard {
     MyToken public immutable myToken;
     uint256 public mintTimer = 0;
 
@@ -48,14 +49,14 @@ contract Forge {
         myToken = new MyToken(address(this));
     }
 
-    function mint(uint256 _id) external {
+    function mint(uint256 _id) external nonReentrant {
         require(_id <= 2, "can only mint token ids 0-2 with this function");
         require(
             mintTimer + 1 minutes <= block.timestamp,
             "must wait 1 minute before minting again"
         );
-        myToken.mintTo(msg.sender, _id);
         mintTimer = block.timestamp;
+        myToken.mintTo(msg.sender, _id);
     }
 
     function trade(uint256 _tokenToTrade, uint256 _tokenToReceive) external {
