@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.1;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract PartialRefund is ERC20 {
-    address public owner = msg.sender;
-    uint256 maxSupply = 100000000 * (10 ** 18);
+contract PartialRefund is ERC20, ReentrancyGuard {
+    address public immutable owner = msg.sender;
+    uint256 public constant maxSupply = 100000000 * (10 ** 18);
     event Log(string message);
 
     constructor(uint256 initialSupply) ERC20("test", "TST") {
@@ -31,8 +32,9 @@ contract PartialRefund is ERC20 {
         _mint(msg.sender, 1000 * (10 ** 18));
     }
 
-    function sellBack(uint256 amount) external {
+    function sellBack(uint256 amount) external nonReentrant {
         require(balanceOf(msg.sender) >= amount, "Not enough tokens");
+        transferFrom(msg.sender, address(this), amount);
         if (amount >= 1000 * (10 ** 18)) {
             uint256 ethToTransfer = ((amount / (1000 * (10 ** 18))) *
                 (10 ** 18)) / 2;
@@ -42,7 +44,6 @@ contract PartialRefund is ERC20 {
             );
             payable(msg.sender).transfer(ethToTransfer);
         }
-        transferFrom(msg.sender, address(this), amount);
     }
 
     receive() external payable {}
