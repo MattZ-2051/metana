@@ -1,34 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import { getLogs } from "./api/alchemy";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [usdcTransferData, setUsdcTransferData] = useState<any>();
+  useEffect(() => {
+    (async () => {
+      const res = await getLogs();
+      setUsdcTransferData(
+        res.map((res) => {
+          return {
+            blockNumber: res.blockNumber,
+            amount: parseInt(res.data, 16) / 1000,
+          };
+        })
+      );
+    })();
+  }, []);
 
   return (
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <ResponsiveContainer width={1000} height={600}>
+        <AreaChart width={1000} height={600} data={usdcTransferData}>
+          <XAxis dataKey="blocknumber" />
+          <YAxis dataKey="amount" />
+          <Tooltip />
+          <Area
+            type="monotone"
+            dataKey="amount"
+            stroke="#8884d8"
+            fill="#8884d8"
+          />
+        </AreaChart>
+      </ResponsiveContainer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
