@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "alchemy-sdk": "^2.6.1",
+    "effector": "^22.7.0",
+    "effector-react": "^22.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "recharts": "^2.4.3"

@@ -5,7 +5,6 @@ import {
   Area,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
@@ -20,19 +19,21 @@ function App() {
         res.map((res) => {
           return {
             blockNumber: res.blockNumber,
-            amount: parseInt(res.data, 16) / 1000,
+            amount: parseInt(res.data, 16),
           };
         })
       );
     })();
   }, []);
 
+  console.log("here", usdcTransferData);
+
   return (
     <div className="App">
       <ResponsiveContainer width={1000} height={600}>
         <AreaChart width={1000} height={600} data={usdcTransferData}>
-          <XAxis dataKey="blocknumber" />
-          <YAxis dataKey="amount" />
+          <XAxis dataKey="blocknumber" width={80} />
+          <YAxis dataKey="amount" width={100} />
           <Tooltip />
           <Area
             type="monotone"

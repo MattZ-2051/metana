@@ -5,6 +5,8 @@ specifiers:
   '@types/react-dom': ^18.0.10
   '@vitejs/plugin-react': ^3.1.0
   alchemy-sdk: ^2.6.1
+  effector: ^22.7.0
+  effector-react: ^22.5.1
   prettier: 2.8.4
   react: ^18.2.0
   react-dom: ^18.2.0
@@ -14,6 +16,8 @@ specifiers:
 
 dependencies:
   alchemy-sdk: 2.6.1
+  effector: 22.7.0
+  effector-react: 22.5.1_xzy47btpk6b7akis5sqfq2jw2y
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   recharts: 2.4.3_biqbaboplfbrettd7655fr4n2y
@@ -1111,6 +1115,23 @@ packages:
       '@babel/runtime': 7.21.0
     dev: false
 
+  /effector-react/22.5.1_xzy47btpk6b7akis5sqfq2jw2y:
+    resolution: {integrity: sha512-Sy5b/sUEZoCuyoCr+SiHcgd0L+PQqnIGx+SuPCZ7MhECYxezkkeecsk0EVj9sykLL2qlEeg+rdiWvIATJgOTeA==}
+    engines: {node: '>=11.0.0'}
+    peerDependencies:
+      effector: ^22.0.2
+      react: '>=16.8.0 <19.0.0'
+    dependencies:
+      effector: 22.7.0
+      react: 18.2.0
+      use-sync-external-store: 1.2.0_react@18.2.0
+    dev: false
+
+  /effector/22.7.0:
+    resolution: {integrity: sha512-C3jMCjRmU/j7Mu04q0zm45OYglQB9fYxSHNu51UrV77VDZJRs7nFmNfNiaXmgkKOnsUP4VuyE64aiSvAZWZo7g==}
+    engines: {node: '>=11.0.0'}
+    dev: false
+
   /electron-to-chromium/1.4.328:
     resolution: {integrity: sha512-DE9tTy2PNmy1v55AZAO542ui+MLC2cvINMK4P2LXGsJdput/ThVG9t+QGecPuAZZSgC8XoI+Jh9M1OG9IoNSCw==}
     dev: true
@@ -1596,6 +1617,14 @@ packages:
       escalade: 3.1.1
       picocolors: 1.0.0
     dev: true
+
+  /use-sync-external-store/1.2.0_react@18.2.0:
+    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: false
 
   /utf-8-validate/5.0.10:
     resolution: {integrity: sha512-Z6czzLq4u8fPOyx7TU6X3dvUZVvoJmxSQ+IcrlmagKhilxlhZgxPK6C5Jqbkw1IDUmFTM+cz9QDnnLTwDz/2gQ==}

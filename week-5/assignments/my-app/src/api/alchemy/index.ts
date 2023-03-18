@@ -23,6 +23,9 @@ export const getLogs = async () => {
   });
 };
 
-// alchemy.ws.on(transferFilter, (log, event) => {
-//   console.log("here", log, event);
-// });
+alchemy.ws.on("block", async (log, event) => {
+  await alchemy.core.getLogs({
+    address: usdcContractAddress,
+    topics: [transferTopic],
+  });
+});
