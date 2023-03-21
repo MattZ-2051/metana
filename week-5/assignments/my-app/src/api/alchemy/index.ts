@@ -6,10 +6,10 @@ const config = {
   network: Network.ETH_MAINNET,
 };
 
-const alchemy = new Alchemy(config);
+export const alchemyApi = new Alchemy(config);
 
-const usdcContractAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
-const transferTopic =
+export const usdcContractAddress = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+export const transferTopic =
   "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
 const transferFilter = {
@@ -17,14 +17,18 @@ const transferFilter = {
   topics: [Utils.id("Transfer(address,address,uint256)")],
 };
 export const getLogs = async () => {
-  return await alchemy.core.getLogs({
+  const block = await alchemyApi.core.getBlockNumber();
+  const logs = await alchemyApi.core.getLogs({
     address: usdcContractAddress,
     topics: [transferTopic],
+    fromBlock: block - 10,
   });
+
+  console.log("logs", logs);
 };
 
-alchemy.ws.on("block", async (log, event) => {
-  await alchemy.core.getLogs({
+alchemyApi.ws.on("block", async (log, event) => {
+  await alchemyApi.core.getLogs({
     address: usdcContractAddress,
     topics: [transferTopic],
   });
