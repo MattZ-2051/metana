@@ -9,42 +9,50 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import "./App.css";
+import { ChartLog } from "./types";
 
 function App() {
-  const [usdcTransferData, setUsdcTransferData] = useState<any>();
+  const [usdcTransferData, setUsdcTransferData] = useState<ChartLog[]>();
+
+  const handleTransferData = async (): Promise<ChartLog[]> => {
+    const logs = await getLogs();
+    const filteredLogs: ChartLog[] = [];
+    for (let i = 0; i < logs.length; i++) {
+      const currentLog = logs[i];
+      const existingLog = filteredLogs.find(
+        (log) => currentLog.blockNumber === log.blockNumber
+      );
+      if (existingLog) {
+        existingLog.amount += parseInt(currentLog.data, 16);
+      } else {
+        filteredLogs.push({
+          blockNumber: currentLog.blockNumber,
+          amount: parseInt(currentLog.data, 16),
+        });
+      }
+    }
+
+    return filteredLogs;
+  };
   useEffect(() => {
     (async () => {
-      const logs = await getLogs();
-      // const amount = logs.reduce((prevVal, currentVal) => {
-      //   console.log("prevVal", prevVal);
-      //   console.log("val", currentVal);
-      //   return parseInt(currentVal.data, 16) + prevVal;
-      // }, 0);
-      // setUsdcTransferData({ amount, blockNumber: logs[0].blockNumber });
+      const filteredLogs = await handleTransferData();
+      setUsdcTransferData(filteredLogs);
     })();
   }, []);
 
-  // useEffect(() => {
-  //   alchemyApi.ws.on("block", async (log, event) => {
-  //     const res = await getLogs();
-  //     const test = res
-  //       .map((res) => {
-  //         return {
-  //           blockNumber: res.blockNumber,
-  //           amount: parseInt(res.data, 16) / 1000000,
-  //         };
-  //       })
-  //       .reduce((prev, current) => {
-  //         return prev.amount + current.amount;
-  //       });
-  //     console.log("test", test);
-  //   });
-  // }, []);
+  useEffect(() => {
+    alchemyApi.ws.on("block", async (log, event) => {
+      const filteredLogs = await handleTransferData();
+      setUsdcTransferData(filteredLogs);
+    });
+  }, []);
 
-  // console.log("here", usdcTransferData);
+  console.log("here", usdcTransferData);
 
   return (
     <div className="App">
+      <h1>USDC Transfer Data</h1>
       <ResponsiveContainer width={1000} height={600}>
         <AreaChart width={1000} height={600} data={usdcTransferData}>
           <XAxis dataKey="blockNumber" width={140} />

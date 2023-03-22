@@ -1,5 +1,5 @@
 // Setup: npm install alchemy-sdk
-import { Alchemy, Network, AlchemySubscription, Utils } from "alchemy-sdk";
+import { Alchemy, Network, AlchemySubscription, Utils, Log } from "alchemy-sdk";
 
 const config = {
   apiKey: import.meta.env.VITE_ALCHEMY_API_KEY,
@@ -16,15 +16,13 @@ const transferFilter = {
   address: usdcContractAddress,
   topics: [Utils.id("Transfer(address,address,uint256)")],
 };
-export const getLogs = async () => {
+export const getLogs = async (): Promise<Log[]> => {
   const block = await alchemyApi.core.getBlockNumber();
-  const logs = await alchemyApi.core.getLogs({
+  return await alchemyApi.core.getLogs({
     address: usdcContractAddress,
     topics: [transferTopic],
     fromBlock: block - 10,
   });
-
-  console.log("logs", logs);
 };
 
 alchemyApi.ws.on("block", async (log, event) => {
