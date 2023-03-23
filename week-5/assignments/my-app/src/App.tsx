@@ -10,7 +10,7 @@ function App() {
   const [usdcTransferData, setUsdcTransferData] =
     useState<TransferLogChart[]>();
   const [baseFeeData, setBaseFeeData] = useState<BaseFeeChart[]>();
-  const [gasFeeData, setGasFeeData] = useState<GasFeeChart[]>([]);
+  const [gasFeeData, setGasFeeData] = useState<GasFeeChart[]>();
 
   const filterTransfers = (logs: Log[]): TransferLogChart[] => {
     const transferData: TransferLogChart[] = [];
