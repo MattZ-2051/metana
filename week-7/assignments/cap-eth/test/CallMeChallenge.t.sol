@@ -2,16 +2,17 @@
 pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
-import "../src/DeployChallenge.sol";
+import "../src/CallMeChallenge.sol";
 
-contract DeployTest is Test {
-    DeployChallenge public target;
+contract CallMeTest is Test {
+    CallMeChallenge public target;
 
     function setUp() public {
-        target = new DeployChallenge();
+        target = new CallMeChallenge();
     }
 
     function testIsComplete() public {
+        target.callme();
         assertEq(target.isComplete(), true);
     }
 }
