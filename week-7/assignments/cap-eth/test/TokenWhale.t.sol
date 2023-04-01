@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.6;
+pragma solidity ^0.8.19;
 pragma abicoder v2;
 
 import "forge-std/Test.sol";
@@ -15,8 +15,6 @@ contract TokenWhaleTest is Test {
 
     function testExample() public {
         vm.startPrank(address(player));
-
-        // tu codigo aca
 
         address player2 = vm.addr(2);
         target.transfer(player2, 501);

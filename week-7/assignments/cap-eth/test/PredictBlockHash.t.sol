@@ -11,8 +11,6 @@ contract PredictBlockHashTest is Test {
 
     function setUp() public {
         target = new PredictTheBlockHashChallenge{value: 1 ether}();
-        vm.label(address(target), "Challenge");
-        vm.label(player, "Player");
         vm.deal(player, 1 ether);
     }
 

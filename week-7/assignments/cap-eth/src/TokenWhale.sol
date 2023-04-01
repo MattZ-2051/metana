@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.7.6;
+pragma solidity ^0.8.19;
+
+import "forge-std/console.sol";
 
 contract TokenWhaleChallenge {
     address player;
@@ -25,8 +27,12 @@ contract TokenWhaleChallenge {
     event Transfer(address indexed from, address indexed to, uint256 value);
 
     function _transfer(address to, uint256 value) internal {
-        balanceOf[msg.sender] -= value;
-        balanceOf[to] += value;
+        unchecked {
+            balanceOf[msg.sender] -= value;
+            console.log("HERE");
+            console.log("balanceOf[msg.sender] = %d", balanceOf[msg.sender]);
+            balanceOf[to] += value;
+        }
 
         emit Transfer(msg.sender, to, value);
     }
