@@ -81,3 +81,18 @@ Explanation:
 - CODESIZE will push the size of the code onto the stack (in this case it is "a")
 - SUB will take the top two values on the stack and subtract first from second in this case a - 4 OR 10 - 4 = 6
 - JUMP will take 6 and jump to the JUMPDEST which is at 06
+
+## Puzzle 3
+```
+00 36  CALLDATASIZE
+01 56  JUMP
+02  FD REVERT
+03  FD REVERT
+04  5B JUMPDEST
+05  00 STOP
+```
+
+Solution: 0x01010101 (4 bytes)
+
+Explanation:
+- CALLDATASIZE will take the size of the call data in bytes and push that on stack so in this case we need to send call data with a value of 4 bytes to get to our destination
