@@ -54,7 +54,7 @@ You can use [`evm.codes`](https://www.evm.codes/)'s reference and playground to 
 09  00 STOP
 ```
 
-Solution: 8
+Solution: `8`
 
 Explanation :
 - CALLVALUE will push the amount sent with the transaction on top of the stack (in this case 8)
@@ -74,7 +74,7 @@ Explanation :
 09  FD REVERT
 ```
 
-Solution: 4
+Solution: `4`
 
 Explanation:
 - CALLVALUE will push the amount sent with the transaction on top of the stack (in this case 4)
@@ -92,7 +92,7 @@ Explanation:
 05  00 STOP
 ```
 
-Solution: 0x01010101 (4 bytes)
+Solution: `0x01010101` (4 bytes)
 
 Explanation:
 - CALLDATASIZE will take the size of the call data in bytes and push that on stack so in this case we need to send call data with a value of 4 bytes to get to our destination
@@ -114,7 +114,7 @@ Explanation:
 0B  00 STOP
 ```
 
-Solution: 6
+Solution: `6`
 
 Explanation:
 - CALLVALUE will push value sent onto the stack (in this case 6)
@@ -139,7 +139,7 @@ Explanation:
 0F  FD REVERT
 ```
 
-Solution: 16
+Solution: `16`
 
 Explanation:
 - CALLVALUE will take value sent and push it into stack (in this case 16)
@@ -149,3 +149,24 @@ Explanation:
 - EQ checks if the first two values on the stack are equal and pushes 1 if they are and 0 if they are not (in this case it will return a 1 because the two values on the stack are 100)
 - PUSH1 will push 1 byte item onto the stack (0c)
 - JUMPI jumps to the instruction on the stack if the second value is different from 0
+
+## Puzzle 6
+```
+00 6000  PUSH1 00
+02 35  CALLDATALOAD
+03 56  JUMP
+04  FD REVERT
+05  FD REVERT
+06  FD REVERT
+07  FD REVERT
+08  FD REVERT
+09  FD REVERT
+0A  5B JUMPDEST
+0B  00 STOP
+```
+Solution:  `0x000000000000000000000000000000000000000000000000000000000000000A`
+
+Explanation:
+- PUSH1 will push `00` on the call stack
+- CALLDATALOAD pops the calldata from the stack and pushes the result on top which is a 32-byte value starting from the given offset of the calldata. All bytes after the end of the end of the calldata are set to 0. So we need to pass in the leading zeroes in our solution to make it a 32 byte value. If we just passed in `0x0a` which is the destination we are trying to jump to. CALLDATALOAD would return `0x0A00000000000000000000000000000000000000000000000000000000000000`
+- JUMP at this point `0a` is on the stack because of the value returned from CALLDATALOAD so we can jump to the correct destination
