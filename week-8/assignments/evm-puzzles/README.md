@@ -120,3 +120,32 @@ Explanation:
 - CALLVALUE will push value sent onto the stack (in this case 6)
 - CODESIZE will take the size of the code and push that on the stack (in this case 12)
 - XOR pops the first two values on the stack and computes the bitwise XOR and returns the result a ^ b. In this case we want it to return 10 or 0a since that is hte JUMPDEST and the next operation is the JUMP. (In this case 12 ^ 6 = 10)
+
+
+## Puzzle 5
+```
+00  34  CALLVALUE
+01  80  DUP1
+02  02  MUL
+03  610100  PUSH2 0100
+06  14  EQ
+07  600C  PUSH1 0C
+09  57  JUMPI
+0A  FD REVERT
+0B  FD REVERT
+0C  5B JUMPDEST
+0D  00 STOP
+0E  FD REVERT
+0F  FD REVERT
+```
+
+Solution: 16
+
+Explanation:
+- CALLVALUE will take value sent and push it into stack (in this case 16)
+- DUP1 will take the value on top of the stack and pushes it on top (in this case 10 or 16 in hex form)
+- MUL will pop the first two values of the stack and multiply them together (10 * 10)
+- PUSH2 will push two bytes on top of the stack (0100)
+- EQ checks if the first two values on the stack are equal and pushes 1 if they are and 0 if they are not (in this case it will return a 1 because the two values on the stack are 100)
+- PUSH1 will push 1 byte item onto the stack (0c)
+- JUMPI jumps to the instruction on the stack if the second value is different from 0
