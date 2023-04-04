@@ -96,3 +96,27 @@ Solution: 0x01010101 (4 bytes)
 
 Explanation:
 - CALLDATASIZE will take the size of the call data in bytes and push that on stack so in this case we need to send call data with a value of 4 bytes to get to our destination
+
+## Puzzle 4
+
+```
+00 34  CALLVALUE
+01 38  CODESIZE
+02 18  XOR
+03 56  JUMP
+04  FD REVERT
+05  FD REVERT
+06  FD REVERT
+07  FD REVERT
+08  FD REVERT
+09  FD REVERT
+0A  5B JUMPDEST
+0B  00 STOP
+```
+
+Solution: 6
+
+Explanation:
+- CALLVALUE will push value sent onto the stack (in this case 6)
+- CODESIZE will take the size of the code and push that on the stack (in this case 12)
+- XOR pops the first two values on the stack and computes the bitwise XOR and returns the result a ^ b. In this case we want it to return 10 or 0a since that is hte JUMPDEST and the next operation is the JUMP. (In this case 12 ^ 6 = 10)
