@@ -73,3 +73,11 @@ Explanation :
 08  FD REVERT
 09  FD REVERT
 ```
+
+Solution: 4
+
+Explanation:
+- CALLVALUE will push the amount sent with the transaction on top of the stack (in this case 4)
+- CODESIZE will push the size of the code onto the stack (in this case it is "a")
+- SUB will take the top two values on the stack and subtract first from second in this case a - 4 OR 10 - 4 = 6
+- JUMP will take 6 and jump to the JUMPDEST which is at 06
