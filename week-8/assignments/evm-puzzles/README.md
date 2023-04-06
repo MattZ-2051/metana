@@ -208,4 +208,42 @@ Explanation:
 	3.  `size`: byte size to copy (size of the initialization code).
 
 - EXITCODESIZE - takes the 20 byte address of the contract to query and returns the byte size of the code, in this case we want it to return 1 byte
-- To solve this we want EXITCODESIZE to return  0 so when PUSH 01 is executed the EQ returns a 0 because the 2 number on the stack 0 and 1 are not equal. Then when it reaches PUSH1 13 it will have the correct number on the stack when JUMPI is called and jumps to 13 since the value is different from 0
+- To solve this we want EXITCODESIZE to return  0 so when PUSH 01 is executed the EQ returns a 0 because the 2 number on the stack 0 and 1 are not equal. Then when it reaches PUSH1 13 it will have the correct number on the stack when JUMPI is called and jumps to 13 since the value is different from 0.
+
+
+## Puzzle 8
+```
+00 36  CALLDATASIZE
+01 6000  PUSH1 00
+03 80  DUP1
+04 37  CALLDATACOPY
+05 36  CALLDATASIZE
+06 6000  PUSH1 00
+08 6000  PUSH1 00
+0A F0  CREATE
+0B 6000  PUSH1 00
+0D 80  DUP1
+0E 80  DUP1
+0F 80  DUP1
+10 80  DUP1
+11 94  SWAP5
+12 5A  GAS
+13 F1  CALL
+14 6000  PUSH1 00
+16 14  EQ
+17 601B  PUSH1 1B
+19 57  JUMPI
+1A  FD REVERT
+1B  5B JUMPDEST
+1C  00 STOP
+```
+
+Solution: `0x60FD60005360016000F3`
+
+Explanation:
+- As the same in the last contract the first 4 lines will copy the calldata into memory and the next 4 will create a contract.
+- SWAP5 swaps the value at the top of the stack with the value at position 5, so values 0 and the contract bytes in this situation resulting in the bytes being on top of the stack
+- GAS pushes the remaining gas on top of the stack (after this current instruction)
+- CALL will call a contract at a given address. Creates a new sub context and execute the code of the given account, then resumes the current one. Note that an account with no code will return success as true.
+- Since the JUMPDEST is at value 1b we will use JUMPI similar to the previous solution to reach that destination by passing creating a second value on the stack that is different than 0
+- We want CALL to return 0 so that way when EQ is reached it will return 1 and cause the JUMPI to jump to 1b since JUMPI jumps if the second value on the stack is less than 0
