@@ -246,4 +246,69 @@ Explanation:
 - GAS pushes the remaining gas on top of the stack (after this current instruction)
 - CALL will call a contract at a given address. Creates a new sub context and execute the code of the given account, then resumes the current one. Note that an account with no code will return success as true.
 - Since the JUMPDEST is at value 1b we will use JUMPI similar to the previous solution to reach that destination by passing creating a second value on the stack that is different than 0
-- We want CALL to return 0 so that way when EQ is reached it will return 1 and cause the JUMPI to jump to 1b since JUMPI jumps if the second value on the stack is less than 0
+- We want CALL to return 0 so that way when EQ is reached it will return 1 and cause the JUMPI to jump to 1b since JUMPI jumps if the second value on the stack is different than 0
+
+## Puzzle 9
+
+```
+00 36  CALLDATASIZE
+01 6003  PUSH1 03
+03 10  LT
+04 6009  PUSH1 09
+06 57  JUMPI
+07  FD REVERT
+08  FD REVERT
+09  5B JUMPDEST
+0A 34  CALLVALUE
+0B 36  CALLDATASIZE
+0C 02  MUL
+0D 6008  PUSH1 08
+0F 14  EQ
+10 6014  PUSH1 14
+12 57  JUMPI
+13  FD REVERT
+14  5B JUMPDEST
+15  00 STOP
+```
+
+Solution: `{"value":2,"data":"0x01010101"}`
+
+Explanation:
+-  LT  pops two values from the stack and returns  `1`  if  `a < b`  ,  `0`  otherwise, where  `a`  is the element at the top of the stack.
+- We need to pass in a value that is larger than 3 bytes since we are comparing 03 and the calldatasize which will reach the first JUMPDEST
+- Then to reach the second JUMPDEST we need EQ to return 1 so we get to PUSH1 14 and then JUMPI which will take us to the JUMPDEST of 14 if the second value on the stack is different that 0
+
+## Puzzle 10
+```
+00 38  CODESIZE
+01 34  CALLVALUE
+02 90  SWAP1
+03 11  GT
+04 6008  PUSH1 08
+06 57  JUMPI
+07  FD REVERT
+08  5B JUMPDEST
+09 36  CALLDATASIZE
+0A 610003  PUSH2 0003
+0D 90  SWAP1
+0E 06  MOD
+0F 15  ISZERO\
+10 34  CALLVALUE\
+11 600A  PUSH1 0A
+13 01  ADD
+14 57  JUMPI
+15  FD REVERT
+16  FD REVERT
+17  FD REVERT
+18  FD REVERT
+19  5B JUMPDEST
+1A  00 STOP
+```
+
+Solution: `{"value":15,"data":"0x"}`
+
+Explanation:
+- GT is the opposite of LT and will return 1 if a > b and 0 otherwise
+- Since the first JUMPDEST is at 08 and that is pushed by PUSH1 08 we need to get GT to return 1 so when JUMPI is reached it will jump to the 08 position since number before that on the stack will be 1
+- ISZERO will pop the value from the stack and push 1 if its 0 and 0 otherwise.
+- Since we want ISZERO to return 1 we need to have the CALLVALUE be a multiple of 3 so when we do CALLVALUE % 3 then it will equal to 0 causing the next operation to return 1
