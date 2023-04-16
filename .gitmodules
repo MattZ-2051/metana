@@ -1,6 +1,0 @@
-[submodule "week-7/assignments/cap-eth/lib/forge-std"]
-	path = week-7/assignments/cap-eth/lib/forge-std
-	url = https://github.com/foundry-rs/forge-std
-[submodule "week-8/assignments/ethernaut-foundry/lib/forge-std"]
-	path = week-8/assignments/ethernaut-foundry/lib/forge-std
-	url = https://github.com/foundry-rs/forge-std
