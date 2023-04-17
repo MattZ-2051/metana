@@ -1,0 +1,3 @@
+[submodule "week-9/assignments/advanced-nft/lib/forge-std"]
+	path = week-9/assignments/advanced-nft/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
