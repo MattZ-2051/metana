@@ -1,1 +1,2 @@
 @openzeppelin/=node_modules/@openzeppelin
+@1001-digital/=node_modules/@1001-digital

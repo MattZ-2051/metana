@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@1001-digital/erc721-extensions": "^0.0.19",
     "@openzeppelin/contracts": "^4.8.3"
   }
 }

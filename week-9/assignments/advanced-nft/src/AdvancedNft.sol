@@ -4,18 +4,21 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@1001-digital/erc721-extensions/contracts/RandomlyAssigned.sol";
 
-contract AdvancedNft is ERC721 {
+contract AdvancedNft is ERC721, Ownable, RandomlyAssigned {
+    using BitMaps for BitMaps.BitMap;
+
     bytes32 public immutable root;
 
-    uint8 public max = 100;
+    uint8 public max = 10;
     mapping(address => Commit) public commits;
+    BitMaps.BitMap private claimedBitMap;
 
     constructor(
-        string memory name,
-        string memory symbol,
         bytes32 merkleroot
-    ) ERC721(name, symbol) {
+    ) ERC721("MyNft", "MNT") RandomlyAssigned(10, 0) {
         root = merkleroot;
     }
 
@@ -25,11 +28,27 @@ contract AdvancedNft is ERC721 {
         bool revealed;
     }
 
+    function get(uint index) public view returns (bool) {
+        return claimedBitMap.get(index);
+    }
+
+    function setTo(uint index, bool value) public {
+        claimedBitMap.setTo(index, value);
+    }
+
+    function set(uint index) public {
+        claimedBitMap.set(index);
+    }
+
+    function unset(uint index) public {
+        claimedBitMap.unset(index);
+    }
+
     function getHash(bytes32 data) public view returns (bytes32) {
         return keccak256(abi.encodePacked(address(this), data));
     }
 
-    function commit(bytes32 dataHash, uint64 block_number) public {
+    function commit(bytes32 dataHash, uint64 block_number) public onlyOwner {
         require(
             block_number > block.number,
             "CommitReveal::reveal: Already revealed"
