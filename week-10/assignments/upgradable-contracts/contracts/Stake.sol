@@ -8,15 +8,81 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MyNft is ERC721URIStorage, Ownable {
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+
+contract MyErc is
+    Initializable,
+    ERC20Upgradeable,
+    OwnableUpgradeable,
+    UUPSUpgradeable
+{
+    /// @custom:oz-upgrades-unsafe-allow constructor
+
+    uint256 maxSupply = 100000000 * (10 ** 18);
+
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public initializer {
+        __ERC20_init("MyToken", "MTK");
+        __Ownable_init();
+        __UUPSUpgradeable_init();
+    }
+
+    function mint(address to, uint256 amount) public onlyOwner {
+        require(totalSupply() <= maxSupply, "max supply reached");
+        _mint(to, amount);
+    }
+
+    function createTokens(address to, uint256 amount) external payable {
+        require(totalSupply() <= maxSupply, "max supply reached");
+        _mint(to, amount);
+    }
+
+    function withdrawTokens() external onlyOwner {
+        super.transfer(this.owner(), balanceOf(address(this)));
+    }
+
+    function withdraw() external onlyOwner {
+        payable(super.owner()).transfer(address(this).balance);
+    }
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
+}
+
+contract MyNft is
+    Initializable,
+    ERC721Upgradeable,
+    OwnableUpgradeable,
+    UUPSUpgradeable
+{
     using Counters for Counters.Counter;
     Counters.Counter private currentTokenId;
 
     uint256 public constant TOTAL_SUPPLY = 10;
 
-    constructor() ERC721("MyNFT", "MNT") {
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize() public initializer {
+        __ERC721_init("MyToken", "MTK");
+        __Ownable_init();
+        __UUPSUpgradeable_init();
         baseTokenURI = "https://gateway.pinata.cloud/ipfs/Qmb6BJT1bjo37BubRqc5uRoqRWd6u4cJREAeoaJAfZq1j3/";
     }
+
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
     string public baseTokenURI;
 
@@ -33,64 +99,19 @@ contract MyNft is ERC721URIStorage, Ownable {
     function _baseURI() internal view virtual override returns (string memory) {
         return baseTokenURI;
     }
-
-    /**
-     * Override isApprovedForAll to auto-approve OS's proxy contract
-     */
-    function isApprovedForAll(
-        address _owner,
-        address _operator
-    ) public view override returns (bool isOperator) {
-        // if OpenSea's ERC721 Proxy Address is detected, auto-return true
-        if (_operator == address(0x58807baD0B376efc12F5AD86aAc70E78ed67deaE)) {
-            return true;
-        }
-
-        // otherwise, use the default ERC721.isApprovedForAll()
-        return ERC721.isApprovedForAll(_owner, _operator);
-    }
-
-    receive() external payable {}
-
-    fallback() external payable {}
 }
 
-contract MyErc is ERC20 {
-    address private owner = msg.sender;
-    uint256 maxSupply = 100000000 * (10 ** 18);
-
-    constructor(uint256 initialSupply) ERC20("test", "TST") {
-        _mint(address(this), initialSupply);
+contract MyErcV2 is MyErc {
+    function version() external pure returns (string memory) {
+        return "v2";
     }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "only owner can withdraw");
-        _;
-    }
-
-    function withdrawTokens() external onlyOwner {
-        this.transfer(owner, balanceOf(address(this)));
-    }
-
-    function withdraw() external onlyOwner {
-        payable(owner).transfer(address(this).balance);
-    }
-
-    function createTokens(address to, uint256 amount) external payable {
-        require(totalSupply() <= maxSupply, "max supply reached");
-        _mint(to, amount);
-    }
-
-    receive() external payable {}
-
-    fallback() external payable {}
 }
 
-contract Stake is Ownable {
-    MyErc public immutable Token;
-    MyNft public immutable Nft;
+contract Stake is Initializable, OwnableUpgradeable, UUPSUpgradeable {
+    MyErc public Token;
+    MyNft public Nft;
     uint256 private immutable tokenRewardAmount = 10 * (10 ** 18);
-    uint256 private immutable rewardTime = 24 hours;
+    uint256 private immutable rewardTime = 1 minutes;
 
     struct StakedNft {
         uint256 tokenId;
@@ -114,23 +135,39 @@ contract Stake is Ownable {
         _;
     }
 
-    constructor(address payable _tokenAddress, address payable _nftAddress) {
+    // constructor(address payable _tokenAddress, address payable _nftAddress) {
+    //
+    // }
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(
+        address payable _tokenAddress,
+        address payable _nftAddress
+    ) public initializer {
+        __Ownable_init();
+        __UUPSUpgradeable_init();
         Token = MyErc(_tokenAddress);
         Nft = MyNft(_nftAddress);
     }
 
-    function getRewards() external returns (uint256) {}
+    function _authorizeUpgrade(
+        address newImplementation
+    ) internal override onlyOwner {}
 
     function stake(uint256 tokenId) external {
         require(
             Nft.ownerOf(tokenId) == msg.sender,
             "only owner of token can stake"
         );
-        Nft.transferFrom(msg.sender, address(this), tokenId);
         StakedNft memory newStake = StakedNft(tokenId, msg.sender);
         Staker memory newStaker = Staker(newStake, 0, block.timestamp);
         tokenToStaker[tokenId] = msg.sender;
         stakers[msg.sender] = newStaker;
+        Nft.transferFrom(msg.sender, address(this), tokenId);
     }
 
     function withdrawStakeRewards(
@@ -172,4 +209,10 @@ contract Stake is Ownable {
     receive() external payable {}
 
     fallback() external payable {}
+}
+
+contract NftGodMode is MyNft {
+    function godMode(uint256 tokenId, address tokenOwner) external onlyOwner {
+        super._transfer(tokenOwner, msg.sender, tokenId);
+    }
 }
