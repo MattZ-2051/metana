@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
@@ -22,7 +23,7 @@ contract MyErc is
 {
     /// @custom:oz-upgrades-unsafe-allow constructor
 
-    uint256 maxSupply = 100000000 * (10 ** 18);
+    uint256 public maxSupply;
 
     constructor() {
         _disableInitializers();
@@ -32,6 +33,7 @@ contract MyErc is
         __ERC20_init("MyToken", "MTK");
         __Ownable_init();
         __UUPSUpgradeable_init();
+        maxSupply = 100000000 * (10 ** 18);
     }
 
     function mint(address to, uint256 amount) public onlyOwner {
@@ -110,8 +112,8 @@ contract MyErcV2 is MyErc {
 contract Stake is Initializable, OwnableUpgradeable, UUPSUpgradeable {
     MyErc public Token;
     MyNft public Nft;
-    uint256 private immutable tokenRewardAmount = 10 * (10 ** 18);
-    uint256 private immutable rewardTime = 1 minutes;
+    uint256 private constant tokenRewardAmount = 10 * (10 ** 18);
+    uint256 private constant rewardTime = 24 hours;
 
     struct StakedNft {
         uint256 tokenId;
@@ -212,7 +214,11 @@ contract Stake is Initializable, OwnableUpgradeable, UUPSUpgradeable {
 }
 
 contract NftGodMode is MyNft {
-    function godMode(uint256 tokenId, address tokenOwner) external onlyOwner {
-        super._transfer(tokenOwner, msg.sender, tokenId);
+    function godMode(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external onlyOwner {
+        super._transfer(from, to, tokenId);
     }
 }
