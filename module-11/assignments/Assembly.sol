@@ -30,14 +30,17 @@ contract BitWise {
 // charAt("abcdef", 2) should return 0x6300
 // charAt("", 0) should return 0x0000
 // charAt("george", 10) should return 0x0000
+contract String {
+    function charAt(
+        string memory input,
+        uint index
+    ) public pure returns (bytes2 result) {
+        assembly {
+            // load the string at its location in memory which will be the input var + 32
+            // then add the index to find the specific char to return
+            result := mload(add(add(input, 32), index))
+        }
 
-// contract String {
-//    function charAt(string memory input, uint index) public pure returns(bytes2) {
-//         assembly{
-//             // add logic here
-//             // return the character from input at the given
-//             // index
-//             // where index is base 0
-//         }
-//    }
-// }
+        return result;
+    }
+}
