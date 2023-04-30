@@ -34,13 +34,15 @@ contract String {
     function charAt(
         string memory input,
         uint index
-    ) public pure returns (bytes2 result) {
+    ) public pure returns (bytes2) {
         assembly {
-            // load the string at its location in memory which will be the input var + 32
-            // then add the index to find the specific char to return
-            result := mload(add(add(input, 32), index))
+            let result := mload(add(add(input, 32), index))
+            result := and(
+                0xff0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff,
+                result
+            )
+            mstore(0x40, result)
+            return(0x40, 0x80)
         }
-
-        return result;
     }
 }
