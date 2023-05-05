@@ -16,3 +16,6 @@
 [submodule "module-12/assignments/cte/lib/forge-std"]
 	path = module-12/assignments/cte/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "module-12/assignments/ethernaut/lib/forge-std"]
+	path = module-12/assignments/ethernaut/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
