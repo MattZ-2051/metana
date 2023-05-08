@@ -1,12 +1,16 @@
-// SPDX-License-Identifier: SEE LICENSE IN LICENSE
-pragma solidity ^0.8.0;
+pragma solidity ^0.4.21;
 
 contract PublicKeyChallenge {
-    address owner = 0x92b28647Ae1F3264661f72fb2eB9625A89D88A31;
+    address owner = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
     bool public isComplete;
+    uint dummy = 0;
 
-    function authenticate(bytes memory publicKey) public {
+    function authenticate(bytes publicKey) public {
         require(address(keccak256(publicKey)) == owner);
         isComplete = true;
+    }
+
+    function dummyTx() public {
+        dummy = 1;
     }
 }

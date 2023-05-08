@@ -1,8 +1,7 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import "hardhat-preprocessor";
-import fs from 'fs';
-
+import fs from "fs";
 
 function getRemappings() {
   return fs
@@ -13,7 +12,9 @@ function getRemappings() {
 }
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.18",
+  solidity: {
+    compilers: [{ version: "0.8.18" }, { version: "0.4.21" }],
+  },
   preprocess: {
     eachLine: (hre) => ({
       transform: (line: string) => {
