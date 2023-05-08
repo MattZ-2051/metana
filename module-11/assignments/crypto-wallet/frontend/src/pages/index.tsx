@@ -1,12 +1,19 @@
 import { Inter } from "next/font/google";
 import { Button, Input } from "antd";
 import { generateWallet } from "@/utils";
+import { alchemyProvider, createWallet } from "@/services/ethers";
+import { BigNumber, ethers } from "ethers";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  const handlePhrase = () => {
-    console.log("wallet", generateWallet().mnemonic);
+  const handlePhrase = async () => {
+    const wallet = await createWallet();
+    console.log("address", wallet.address);
+    console.log(
+      "balance",
+      ethers.utils.formatEther(await alchemyProvider.getBalance(wallet.address))
+    );
   };
   return (
     <main
