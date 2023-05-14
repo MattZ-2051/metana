@@ -1,8 +1,13 @@
 import { Wallet, ethers } from "ethers";
-import { generateRandomWallet, generateWallet } from "@/utils";
-import { HDNode } from "ethers/lib/utils.js";
+import {
+  encryptPassword,
+  generateRandomWallet,
+  generateWallet,
+  handleLocalStorage,
+} from "@/utils";
+import { HDNode, poll } from "ethers/lib/utils.js";
 
-export const alchemyProvider = new ethers.providers.AlchemyProvider("goerli");
+export const alchemyProvider = new ethers.providers.AlchemyProvider("maticmum");
 
 export const createWallet = (password: string): HDNode => {
   const wallet = generateRandomWallet(alchemyProvider);
@@ -10,7 +15,13 @@ export const createWallet = (password: string): HDNode => {
     wallet.mnemonic.phrase,
     password
   );
-  return node.derivePath("m/44'/60'/0'/0/0");
+  const account1 = node.derivePath("m/44'/60'/0'/0/0");
+  const encryptedKey = encryptPassword(
+    account1.privateKey,
+    password
+  ).toString();
+  handleLocalStorage.setItem("account-1", encryptedKey);
+  return account1;
 };
 
 export const createWalletFromMnemonic = (
@@ -25,4 +36,35 @@ export const getWallet = (privateKey: string): Wallet => {
   const wallet = generateWallet(privateKey, alchemyProvider);
   console.log("wallet mnemonic", wallet.mnemonic);
   return wallet;
+};
+
+export const getAccountBalance = async (address: string): Promise<string> => {
+  const balance = await alchemyProvider.getBalance(address);
+  return ethers.utils.formatEther(balance);
+};
+
+export const sendMatic = async (
+  wallet: Wallet,
+  to: string,
+  value: string
+): Promise<ethers.providers.TransactionResponse> => {
+  const nonce = await alchemyProvider.getTransactionCount(wallet.address);
+  const gasPrice = await alchemyProvider.getGasPrice();
+  const tx = {
+    nonce: ethers.utils.hexlify(nonce),
+    gasPrice: ethers.utils.hexlify(gasPrice),
+    gasLimit: ethers.utils.hexlify(21000),
+    to,
+    value: ethers.utils.parseEther(value.toString()).toHexString(),
+    data: "",
+    chainId: 80001,
+  };
+  return await wallet.sendTransaction(tx);
+};
+
+export const pollPendingTx = async (
+  txHash: string
+): Promise<ethers.providers.TransactionReceipt> => {
+  const tx = await alchemyProvider.waitForTransaction(txHash);
+  return tx;
 };
