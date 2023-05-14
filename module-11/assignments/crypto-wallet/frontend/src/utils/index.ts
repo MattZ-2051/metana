@@ -1,5 +1,5 @@
 import { Wallet } from "ethers";
-import CryptosJs from "crypto-js";
+import CryptoJs from "crypto-js";
 
 export const generateWallet = (privateKey: string, provider: any): Wallet => {
   let wallet: Wallet;
@@ -14,20 +14,24 @@ export const generateRandomWallet = (provider: any): Wallet => {
 };
 
 export const handleLocalStorage = {
-  setItem: (value: string) => {
-    localStorage.setItem("pass", value);
+  setItem: (key: string, value: string) => {
+    localStorage.setItem(key, value);
   },
-  removeItem: () => {
-    localStorage.removeItem("pass");
+  removeItem: (key: string) => {
+    localStorage.removeItem(key);
   },
-  getItem: () => {
-    localStorage.getItem("pass");
+  getItem: (key: string): string | null => {
+    return localStorage.getItem(key);
   },
 };
-// export const encryptPassword = (password: string, mnemonic: string) => {
-//   const hash = CryptosJs.AES.encrypt(mnemonic, password);
-// };
+export const encryptPassword = (
+  mnemonic: string,
+  password: string
+): CryptoJs.lib.CipherParams => {
+  return CryptoJs.AES.encrypt(mnemonic, password);
+};
 
-// export const decryptPassword = (password: string) => {
-//   const value =
-// }
+export const decryptPassword = (cipherText: string, password: string) => {
+  const bytes = CryptoJs.AES.decrypt(cipherText, password);
+  return bytes.toString(CryptoJs.enc.Utf8);
+};
