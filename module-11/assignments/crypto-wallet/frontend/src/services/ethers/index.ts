@@ -5,9 +5,12 @@ import {
   generateWallet,
   handleLocalStorage,
 } from "@/utils";
-import { HDNode, poll } from "ethers/lib/utils.js";
+import { HDNode } from "ethers/lib/utils.js";
 
-export const alchemyProvider = new ethers.providers.AlchemyProvider("maticmum");
+export const alchemyProvider = new ethers.providers.AlchemyProvider(
+  "maticmum",
+  "C4HiLlq-SWhROd7OoiTuXbZ_jD9YzfVp"
+);
 
 export const createWallet = (password: string): HDNode => {
   const wallet = generateRandomWallet(alchemyProvider);
@@ -15,13 +18,16 @@ export const createWallet = (password: string): HDNode => {
     wallet.mnemonic.phrase,
     password
   );
-  const account1 = node.derivePath("m/44'/60'/0'/0/0");
+  const account0 = node.derivePath("m/44'/60'/0'/0/0");
   const encryptedKey = encryptPassword(
-    account1.privateKey,
+    account0.privateKey,
     password
   ).toString();
-  handleLocalStorage.setItem("account-1", encryptedKey);
-  return account1;
+  handleLocalStorage.setItem(
+    "accounts",
+    JSON.stringify({ "account-0": encryptedKey })
+  );
+  return account0;
 };
 
 export const createWalletFromMnemonic = (

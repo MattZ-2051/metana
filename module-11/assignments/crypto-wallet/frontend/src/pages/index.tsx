@@ -1,31 +1,22 @@
 import { useEffect, useState } from "react";
 import { Inter } from "next/font/google";
 import { Button, Input, Dropdown } from "antd";
-import {
-  createWallet,
-  getWallet,
-  createWalletFromMnemonic,
-  getAccountBalance,
-} from "@/services/ethers";
+import { createWallet, getWallet, getAccountBalance } from "@/services/ethers";
 import { ethers } from "ethers";
 import { decryptPassword, handleLocalStorage } from "@/utils";
-import { WalletState } from "@/types";
+import { AccountInfo, WalletState } from "@/types";
 import SendTx from "@/components/SendTx";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
-  const [seedPhrase, setSeedPhrase] = useState<string>();
-  const [privateKey, setPrivateKey] = useState<string>();
-  const [addressToSend, setAddressToSend] = useState<string>();
-  const [valueToSend, setValueToSend] = useState<string>();
   const [password, setPassword] = useState<string>();
   const [walletState, setWalletState] = useState<WalletState>("notCreated");
   const [walletInfo, setWalletInfo] = useState<ethers.Wallet>();
-  const [accountInfo, setAccountInfo] = useState<any>();
+  const [accountInfo, setAccountInfo] = useState<AccountInfo>();
 
   useEffect(() => {
-    if (handleLocalStorage.getItem("account-1")) {
+    if (handleLocalStorage.getItem("account-0")) {
       setWalletState("login");
     }
   }, []);
@@ -37,32 +28,43 @@ export default function Home() {
       setAccountInfo({ address: wallet.address, balance });
       setWalletState("created");
       setWalletInfo(getWallet(wallet.privateKey));
-      console.log("item", wallet);
     } else {
       setWalletState("pending");
     }
   };
 
+  const handleAccountBalance = async () => {
+    if (accountInfo?.address) {
+      const balance = await getAccountBalance(accountInfo.address);
+      setAccountInfo((prevState) => ({ ...prevState, balance }));
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      await handleAccountBalance();
+    })();
+  }, [walletState]);
+
   const handleWalletLogin = async () => {
     if (password) {
-      const cipher = handleLocalStorage.getItem("account-1");
+      const cipher = handleLocalStorage.getItem("account-0");
       if (cipher) {
         const key = decryptPassword(cipher, password).toString();
         const wallet = getWallet(key);
         const balance = await getAccountBalance(wallet.address);
         setWalletInfo(wallet);
-        console.log("balance", balance);
         setWalletState("created");
         setAccountInfo({ address: wallet.address, balance });
       }
     }
   };
 
-  const hdLogin = () => {
-    if (seedPhrase) {
-      console.log("there", createWalletFromMnemonic(seedPhrase, 1));
-    }
-  };
+  // const hdLogin = () => {
+  //   if (seedPhrase) {
+  //     console.log("there", createWalletFromMnemonic(seedPhrase, 1));
+  //   }
+  // };
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -144,9 +146,9 @@ export default function Home() {
             >
               Send Matic
             </Button>{" "}
-            <Button type="primary" className="w-full mt-8 bg-black">
-              Import Tokens
-            </Button>{" "}
+            {/* <Button type="primary" className="w-full mt-8 bg-black">
+              Send ERC20 Tokens
+            </Button>{" "} */}
           </div>
         )}
         {walletState === "send" && walletInfo && (

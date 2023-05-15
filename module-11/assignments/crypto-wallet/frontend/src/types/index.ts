@@ -5,3 +5,10 @@ export type WalletState =
   | "login"
   | "send"
   | "accountSwitch";
+
+export type PendingTx = "pending" | "none" | "error" | string;
+
+export type AccountInfo = {
+  address: string;
+  balance: string;
+};
