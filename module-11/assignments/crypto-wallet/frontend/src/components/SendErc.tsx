@@ -8,26 +8,13 @@ interface IProps {
   setWalletState: (state: WalletState) => void;
   walletInfo: ethers.Wallet;
 }
-const SendTx = ({ setWalletState, walletInfo }: IProps) => {
+
+const SendErc = ({ setWalletState, walletInfo }: IProps) => {
   const [addressToSend, setAddressToSend] = useState<string>();
   const [valueToSend, setValueToSend] = useState<string>();
   const [pendingTx, setPendingTx] = useState<PendingTx>("none");
 
-  const handleSend = async () => {
-    if (walletInfo && addressToSend && valueToSend) {
-      setPendingTx("loading");
-      try {
-        const res = await sendMatic(walletInfo, addressToSend, valueToSend);
-        const receipt = await pollPendingTx(res.hash);
-        setPendingTx(receipt.transactionHash);
-      } catch (err) {
-        console.log("err", err);
-        setPendingTx("error");
-      }
-    } else {
-      setWalletState("send");
-    }
-  };
+  const handleSend = () => {};
 
   return (
     <div className="flex flex-col justify-center w-full h-full pb-8">
@@ -79,5 +66,4 @@ const SendTx = ({ setWalletState, walletInfo }: IProps) => {
     </div>
   );
 };
-
-export default SendTx;
+export default SendErc;

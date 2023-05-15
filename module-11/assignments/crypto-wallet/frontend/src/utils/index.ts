@@ -21,7 +21,13 @@ export const handleLocalStorage = {
     localStorage.removeItem(key);
   },
   getItem: (key: string): string | null => {
-    return localStorage.getItem(key);
+    const storage = localStorage.getItem("accounts");
+    if (storage) {
+      const accounts = JSON.parse(storage);
+      return localStorage.getItem(accounts[key]);
+    } else {
+      return null;
+    }
   },
 };
 export const encryptPassword = (
