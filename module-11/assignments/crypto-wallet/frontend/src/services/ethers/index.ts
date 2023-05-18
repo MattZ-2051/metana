@@ -1,6 +1,6 @@
 import { Wallet, ethers } from "ethers";
 import {
-  encryptPassword,
+  encryptItem,
   generateRandomWallet,
   generateWallet,
   handleLocalStorage,
@@ -19,15 +19,17 @@ export const createWallet = (password: string): HDNode => {
     password
   );
   const account0 = node.derivePath("m/44'/60'/0'/0/0");
-  const encryptedKey = encryptPassword(
-    account0.privateKey,
-    password
-  ).toString();
+  const encryptedKey = encryptItem(account0.privateKey, password).toString();
   handleLocalStorage.setItem(
     "accounts",
     JSON.stringify({ "account-0": encryptedKey })
   );
   return account0;
+};
+
+export const setMnemonic = (mnemonic: string, password: string) => {
+  const encryptedKey = encryptItem(mnemonic, password);
+  handleLocalStorage.setItem("mnemonic", encryptedKey.toString());
 };
 
 export const createAccountFromPhrase = (
@@ -37,10 +39,7 @@ export const createAccountFromPhrase = (
 ): HDNode => {
   const node = ethers.utils.HDNode.fromMnemonic(seedPhrase, password);
   const newAccount = node.derivePath(`m/44'/60'/0'/0/${index}`);
-  const encryptedKey = encryptPassword(
-    newAccount.privateKey,
-    password
-  ).toString();
+  const encryptedKey = encryptItem(newAccount.privateKey, password).toString();
   const accounts = handleLocalStorage.getItem("accounts");
   if (accounts) {
     const accountsJson = JSON.parse(accounts);

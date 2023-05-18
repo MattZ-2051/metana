@@ -33,14 +33,14 @@ export const handleLocalStorage = {
     return localStorage.getItem(key);
   },
 };
-export const encryptPassword = (
-  mnemonic: string,
-  password: string
+export const encryptItem = (
+  message: string,
+  key: string
 ): CryptoJs.lib.CipherParams => {
-  return CryptoJs.AES.encrypt(mnemonic, password);
+  return CryptoJs.AES.encrypt(message, key);
 };
 
-export const decryptPassword = (cipherText: string, password: string) => {
+export const decryptItem = (cipherText: string, password: string) => {
   const bytes = CryptoJs.AES.decrypt(cipherText, password);
   return bytes.toString(CryptoJs.enc.Utf8);
 };
