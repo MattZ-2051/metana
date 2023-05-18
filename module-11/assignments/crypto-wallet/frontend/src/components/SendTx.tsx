@@ -21,7 +21,6 @@ const SendTx = ({ setWalletState, walletInfo }: IProps) => {
         const receipt = await pollPendingTx(res.hash);
         setPendingTx(receipt.transactionHash);
       } catch (err) {
-        console.log("err", err);
         setPendingTx("error");
       }
     } else {

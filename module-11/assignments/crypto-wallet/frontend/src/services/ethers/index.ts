@@ -30,17 +30,29 @@ export const createWallet = (password: string): HDNode => {
   return account0;
 };
 
-export const createWalletFromMnemonic = (
-  mnemonic: string,
+export const createAccountFromPhrase = (
+  seedPhrase: string,
+  password: string,
   index: number
 ): HDNode => {
-  const node = ethers.utils.HDNode.fromMnemonic(mnemonic, "password");
-  return node.derivePath(`m/44'/60'/0'/0/${index}`);
+  const node = ethers.utils.HDNode.fromMnemonic(seedPhrase, password);
+  const newAccount = node.derivePath(`m/44'/60'/0'/0/${index}`);
+  const encryptedKey = encryptPassword(
+    newAccount.privateKey,
+    password
+  ).toString();
+  const accounts = handleLocalStorage.getItem("accounts");
+  if (accounts) {
+    const accountsJson = JSON.parse(accounts);
+    accountsJson[`account-${index}`] = encryptedKey;
+    handleLocalStorage.setItem("accounts", JSON.stringify(accountsJson));
+  }
+
+  return newAccount;
 };
 
 export const getWallet = (privateKey: string): Wallet => {
   const wallet = generateWallet(privateKey, alchemyProvider);
-  console.log("wallet mnemonic", wallet.mnemonic);
   return wallet;
 };
 
