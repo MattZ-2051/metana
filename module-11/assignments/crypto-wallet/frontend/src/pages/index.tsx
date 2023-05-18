@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { Inter } from "next/font/google";
-import { Button, Input, Dropdown } from "antd";
+import { Button, Input, Dropdown, MenuProps } from "antd";
 import {
   createWallet,
   getWallet,
   getAccountBalance,
   createAccountFromPhrase,
+  setMnemonic,
 } from "@/services/ethers";
 import { ethers } from "ethers";
-import { decryptPassword, handleLocalStorage } from "@/utils";
+import { decryptItem, handleLocalStorage } from "@/utils";
 import { AccountInfo, WalletState } from "@/types";
 import SendTx from "@/components/SendTx";
 
@@ -18,7 +19,11 @@ export default function Home() {
   const [password, setPassword] = useState<string>();
   const [walletState, setWalletState] = useState<WalletState>("notCreated");
   const [walletInfo, setWalletInfo] = useState<ethers.Wallet>();
-  const [accountInfo, setAccountInfo] = useState<AccountInfo>();
+  const [accountInfo, setAccountInfo] = useState<{
+    account: AccountInfo;
+    index: number;
+  }>();
+  const [newAccountIndex, setNewAccountIndex] = useState<number>(1);
   const [seedPhrase, setSeedPhrase] = useState<string>();
   const [otherAccounts, setOtherAccounts] = useState<
     | {
@@ -31,57 +36,87 @@ export default function Home() {
   useEffect(() => {
     if (handleLocalStorage.getAccounts("account-0")) {
       setWalletState("login");
-      if (handleLocalStorage.getAccounts("account-1")) {
-        const accounts = handleLocalStorage.getItem("accounts");
-        if (accounts && password) {
-          const accountsJson = JSON.parse(accounts);
-          const otherAccountsArr: { account: AccountInfo; index: number }[] =
-            [];
-          for (const account in accountsJson) {
-            if (parseInt(account.split("-")[1], 10) > 0) {
-              const cipher = accountsJson[account];
-              const key = decryptPassword(cipher, password).toString();
-              const newAccount = getWallet(key);
-              const newAccountInfo = {
-                address: newAccount.address,
-                balance: "0",
-              };
-              otherAccountsArr.push({
-                account: newAccountInfo,
-                index: parseInt(account.split("-")[1], 10),
-              });
-            }
-          }
-
-          console.log("asdfasd", otherAccountsArr);
-          setOtherAccounts((prevState) => {
-            return prevState && prevState.length > 0
-              ? [...prevState, ...otherAccountsArr]
-              : otherAccountsArr;
-          });
-        }
-      }
     }
   }, []);
+
+  useEffect(() => {
+    if (password && walletState === "created") {
+      const phrase = handleLocalStorage.getItem("mnemonic");
+      if (phrase) {
+        const seed = decryptItem(phrase, password);
+        setSeedPhrase(seed);
+      }
+    }
+  }, [walletState]);
+  useEffect(() => {
+    if (handleLocalStorage.getAccounts("account-1")) {
+      const accounts = handleLocalStorage.getItem("accounts");
+      if (accounts && password) {
+        const accountsJson = JSON.parse(accounts);
+        setNewAccountIndex(Object.keys(accountsJson).length);
+        const otherAccountsArr: { account: AccountInfo; index: number }[] = [];
+        for (const account in accountsJson) {
+          const index = parseInt(account.split("-")[1], 10);
+          if (
+            index > 0 &&
+            !otherAccounts?.find((info) => info.index === index)
+          ) {
+            const cipher = accountsJson[account];
+            const key = decryptItem(cipher, password).toString();
+            const newAccount = getWallet(key);
+            const newAccountInfo = {
+              address: newAccount.address,
+              balance: "0",
+            };
+            otherAccountsArr.push({
+              account: newAccountInfo,
+              index: parseInt(account.split("-")[1], 10),
+            });
+          }
+        }
+
+        setOtherAccounts((prevState) => {
+          return prevState && prevState.length > 0
+            ? [...prevState, ...otherAccountsArr]
+            : otherAccountsArr;
+        });
+      }
+    }
+  }, [walletState]);
 
   const handleWalletCreate = async () => {
     if (password) {
       const wallet = createWallet(password);
       const balance = await getAccountBalance(wallet.address);
-      setSeedPhrase(wallet.mnemonic?.phrase);
-      setAccountInfo({ address: wallet.address, balance });
-      setWalletState("created");
-
-      setWalletInfo(getWallet(wallet.privateKey));
+      if (wallet.mnemonic) {
+        setMnemonic(wallet.mnemonic.phrase, password);
+        setSeedPhrase(wallet.mnemonic.phrase);
+        setAccountInfo({
+          account: { address: wallet.address, balance },
+          index: 0,
+        });
+        setWalletState("created");
+        setWalletInfo(getWallet(wallet.privateKey));
+      }
     } else {
       setWalletState("pending");
     }
   };
 
   const handleAccountBalance = async () => {
-    if (accountInfo?.address) {
-      const balance = await getAccountBalance(accountInfo.address);
-      setAccountInfo((prevState) => ({ ...prevState, balance }));
+    if (accountInfo?.account?.address) {
+      const balance = await getAccountBalance(accountInfo?.account?.address);
+      setAccountInfo((prevState) => {
+        return (
+          prevState && {
+            account: {
+              address: prevState.account.address,
+              balance,
+            },
+            index: prevState.index,
+          }
+        );
+      });
     }
   };
 
@@ -91,23 +126,43 @@ export default function Home() {
     })();
   }, [walletState]);
 
-  const handleWalletLogin = async () => {
+  const handleWalletLogin = async (accountNumber: number) => {
     if (password) {
-      const cipher = handleLocalStorage.getAccounts("account-0");
+      const cipher = handleLocalStorage.getAccounts(`account-${accountNumber}`);
       if (cipher) {
-        const key = decryptPassword(cipher, password).toString();
+        const key = decryptItem(cipher, password).toString();
         const wallet = getWallet(key);
         const balance = await getAccountBalance(wallet.address);
         setWalletInfo(wallet);
         setWalletState("created");
-        setAccountInfo({ address: wallet.address, balance });
+        setOtherAccounts((prevState) => {
+          const oldAccount = {
+            address: accountInfo?.account.address,
+            balance: "0",
+          };
+          return prevState
+            ? [
+                ...prevState?.filter((info) => info.index !== accountNumber),
+                { account: oldAccount, index: accountInfo?.index },
+              ]
+            : [{ account: oldAccount, index: accountInfo?.index }];
+        });
+
+        setAccountInfo({
+          account: { address: wallet.address, balance },
+          index: accountNumber,
+        });
       }
     }
   };
 
   const createAccount = () => {
     if (seedPhrase && password) {
-      const newAccount = createAccountFromPhrase(seedPhrase, password, 1);
+      const newAccount = createAccountFromPhrase(
+        seedPhrase,
+        password,
+        newAccountIndex
+      );
       const newAccountInfo = {
         address: newAccount.address,
         balance: "0",
@@ -121,12 +176,16 @@ export default function Home() {
                 index: prevState[prevState.length - 1].index + 1,
               },
             ]
-          : undefined;
+          : [{ account: newAccountInfo, index: newAccountIndex }];
       });
+      setNewAccountIndex((prevState) => prevState + 1);
     }
   };
 
-  console.log("otherAccounts", otherAccounts);
+  const handleAccountsSwitch = (e: { key: string }) => {
+    handleWalletLogin(parseInt(e.key, 10));
+  };
+
   return (
     <main
       className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -176,7 +235,7 @@ export default function Home() {
             />
             <Button
               type="primary"
-              onClick={handleWalletLogin}
+              onClick={() => handleWalletLogin(0)}
               className="w-full mt-8 bg-black"
             >
               Login
@@ -195,7 +254,13 @@ export default function Home() {
               </Button>{" "}
               {otherAccounts && otherAccounts.length >= 1 && (
                 <Dropdown
-                  menu={{ items: [{ key: "1", label: "address" }] }}
+                  menu={{
+                    items: otherAccounts.map((info, index) => ({
+                      key: info.index,
+                      label: info.account.address,
+                    })),
+                    onClick: handleAccountsSwitch,
+                  }}
                   placement="bottom"
                 >
                   <Button>Switch Account</Button>
@@ -204,9 +269,9 @@ export default function Home() {
             </div>
             <p className="mb-8 text-xl text-center">Wallet Info</p>
             <p>Address</p>
-            <p className="">{accountInfo?.address}</p>
+            <p className="">{accountInfo?.account?.address}</p>
             <p className="mt-4">Balance</p>
-            <p>{accountInfo?.balance}</p>
+            <p>{accountInfo?.account?.balance}</p>
             <Button
               type="primary"
               onClick={() => setWalletState("send")}
@@ -214,9 +279,6 @@ export default function Home() {
             >
               Send Matic
             </Button>{" "}
-            {/* <Button type="primary" className="w-full mt-8 bg-black">
-              Send ERC20 Tokens
-            </Button>{" "} */}
           </div>
         )}
         {walletState === "send" && walletInfo && (
