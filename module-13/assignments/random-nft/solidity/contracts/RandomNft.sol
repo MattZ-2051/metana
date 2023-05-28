@@ -10,11 +10,14 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 // VRFCoordinator - 0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
 // KeyHash - 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f
 // gasLimit - 2,500,000
+/* tokenUris - ["https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/0.json","https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/1.json","https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/2.json","https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/3.json"]
+ */
 contract RandomNft is VRFConsumerBaseV2, ERC721URIStorage {
     enum Types {
         fire,
         water,
-        grass
+        grass,
+        electric
     }
 
     uint256 private tokenCounter;
