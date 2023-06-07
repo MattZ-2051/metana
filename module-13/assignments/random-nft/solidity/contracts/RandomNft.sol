@@ -10,8 +10,14 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 // VRFCoordinator - 0x7a1BaC17Ccc5b313516C5E16fb24f7659aA5ebed
 // KeyHash - 0x4b09e658ed251bcafeebbc69400383d49f344ace09b9576fe248bb02c003fe9f
 // gasLimit - 2,500,000
-/* tokenUris - ["https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/0.json","https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/1.json","https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/2.json","https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/3.json"]
- */
+
+//Goerli config vars
+// VRFCoordinator - 0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D
+// KeyHash - 0x79d3d8832d904592c0bf9818b621522c988bb8b0c05cdc3b15aea1b6e8db0c15
+// gasLimit - 2,500,000
+
+/* tokenUris = ["https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/0.json","https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/1.json","https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/2.json","https://gateway.pinata.cloud/ipfs/Qmd8GUueZnxPZ7nbtTKD8QUisRQ63JD18jHKPKfviL5shB/3.json"] */
+
 contract RandomNft is VRFConsumerBaseV2, ERC721URIStorage {
     enum Types {
         fire,
@@ -19,7 +25,6 @@ contract RandomNft is VRFConsumerBaseV2, ERC721URIStorage {
         grass,
         electric
     }
-
     uint256 private tokenCounter;
     string[] public tokenUris;
 
@@ -33,6 +38,7 @@ contract RandomNft is VRFConsumerBaseV2, ERC721URIStorage {
     uint32 private constant NUM_WORDS = 1;
 
     mapping(uint256 => address) public requestIdToSender;
+    mapping(address owner => uint256[]) public ownedTokens;
 
     constructor(
         address _vrfCoordinatorV2,
@@ -40,7 +46,7 @@ contract RandomNft is VRFConsumerBaseV2, ERC721URIStorage {
         bytes32 _keyHash,
         uint256 _mintFee,
         uint32 _callBackGasLimit,
-        string[3] memory _nftTokenUris
+        string[4] memory _nftTokenUris
     ) VRFConsumerBaseV2(_vrfCoordinatorV2) ERC721("RandomToken", "MRT") {
         vrfCoordinator = VRFCoordinatorV2Interface(_vrfCoordinatorV2);
         subscriptionId = _subscriptionId;
@@ -66,6 +72,7 @@ contract RandomNft is VRFConsumerBaseV2, ERC721URIStorage {
         );
 
         requestIdToSender[requestId] = msg.sender;
+        return requestId;
     }
 
     function fulfillRandomWords(
@@ -77,18 +84,20 @@ contract RandomNft is VRFConsumerBaseV2, ERC721URIStorage {
         Types nftType = getBreedFromModdedRng(modded);
         _safeMint(nftOwner, tokenCounter);
         _setTokenURI(tokenCounter, tokenUris[uint256(nftType)]);
+        address sender = requestIdToSender[requestId];
+        ownedTokens[sender].push(tokenCounter);
         tokenCounter++;
     }
 
-    function getChanceArray() public pure returns (uint256[3] memory) {
-        return [uint256(10), uint256(45), uint256(100)];
+    function getChanceArray() public pure returns (uint256[4] memory) {
+        return [uint256(10), uint256(20), uint256(45), uint256(100)];
     }
 
     function getBreedFromModdedRng(
         uint256 moddedRng
     ) public pure returns (Types) {
         uint256 totalSum = 0;
-        uint256[3] memory chanceArray = getChanceArray();
+        uint256[4] memory chanceArray = getChanceArray();
         for (uint256 i = 0; i < chanceArray.length; i++) {
             if (
                 moddedRng >= totalSum && moddedRng < totalSum + chanceArray[i]
