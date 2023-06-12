@@ -25,3 +25,9 @@
 [submodule "module-11/assignments/crypto-wallet/backend/lib/forge-std"]
 	path = module-11/assignments/crypto-wallet/backend/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "module-14/assignments/stable-coin/lib/forge-std"]
+	path = module-14/assignments/stable-coin/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "module-14/assignments/stable-coin/lib/openzeppelin-contracts"]
+	path = module-14/assignments/stable-coin/lib/openzeppelin-contracts
+	url = https://github.com/openzeppelin/openzeppelin-contracts
