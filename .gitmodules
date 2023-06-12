@@ -31,3 +31,6 @@
 [submodule "module-14/assignments/stable-coin/lib/openzeppelin-contracts"]
 	path = module-14/assignments/stable-coin/lib/openzeppelin-contracts
 	url = https://github.com/Openzeppelin/openzeppelin-contracts
+[submodule "module-14/assignments/stable-coin/lib/chainlink"]
+	path = module-14/assignments/stable-coin/lib/chainlink
+	url = https://github.com/smartcontractkit/chainlink
