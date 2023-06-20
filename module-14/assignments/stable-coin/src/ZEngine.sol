@@ -12,6 +12,7 @@ contract ZEngine is ReentrancyGuard {
     error ZEngine_TokenNotAllowed();
     error ZEngine_TransferFailed();
     error ZEngine_BreaksHealthFactor(uint256 healthFactor);
+    error ZEngine_MintFailed();
 
     uint256 private constant FEED_PRECISION = 1e10;
     uint256 private constant PRECISION = 1e18;
@@ -67,6 +68,11 @@ contract ZEngine is ReentrancyGuard {
 
     function mintZCoin(uint256 _amount) external moreThanZero(_amount) nonReentrant {
         s_zCoinMinted[msg.sender] += _amount;
+        _checkHealthFactor(msg.sender);
+        bool minted = zcoin.mint(msg.sender, _amount);
+        if (!minted) {
+            revert ZEngine_MintFailed();
+        }
     }
 
     function _getAccountInfo(address _user) private view returns (uint256 totalCoins, uint256 collateralValue) {
@@ -76,7 +82,7 @@ contract ZEngine is ReentrancyGuard {
     }
 
     function _checkHealthFactor(address _user) internal view {
-        (uint256 totalCoins, uint256 collateralValue) = _getAccountInfo(user);
+        (uint256 totalCoins, uint256 collateralValue) = _getAccountInfo(_user);
         uint256 collateralAdjusted = (collateralValue * LIQUIDATION_THRESHOLD) / 100;
         uint256 healthFactor = (collateralAdjusted * PRECISION) / totalCoins;
         if (healthFactor < MIN_HEALTH_FACTOR) {
@@ -85,9 +91,9 @@ contract ZEngine is ReentrancyGuard {
     }
 
     function getAccountCollateralValue(address _user) public view returns (uint256 totalCollateralInUsd) {
-        for (i = 0; i < s_collateralTokens.length; i++) {
+        for (uint256 i = 0; i < s_collateralTokens.length; i++) {
             address token = s_collateralTokens[i];
-            uint256 amount = s_collateralDeposited[user][token];
+            uint256 amount = s_collateralDeposited[_user][token];
             totalCollateralInUsd += getUsdValue(token, amount);
         }
 
@@ -96,7 +102,7 @@ contract ZEngine is ReentrancyGuard {
 
     function getUsdValue(address _token, uint256 _amount) public view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[_token]);
-        (uint256 price) = priceFeed.latestRoundData();
-        return ((uint256(price) * FEED_PRECISION) * _amount) / PRECISION;
+        (, int256 answer,,,) = priceFeed.latestRoundData();
+        return ((uint256(answer) * FEED_PRECISION) * _amount) / PRECISION;
     }
 }
