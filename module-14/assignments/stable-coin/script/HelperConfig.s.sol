@@ -10,8 +10,8 @@ import {ERC20Mock} from "@openzeppelin/contracts/mocks/ERC20Mock.sol";
 
 contract Helper is Script {
     struct NetworkConfig {
-        address wethUsdPriceFeed;
-        address wbtcUsdPriceFeed;
+        address ethUsdPriceFeed;
+        address btcUsdPriceFeed;
         address weth;
         address wbtc;
         uint256 deployerKey;
@@ -34,8 +34,8 @@ contract Helper is Script {
 
     function getGoerliConfig() public view returns (NetworkConfig memory) {
         return NetworkConfig({
-            wethUsdPriceFeed: 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e,
-            wbtcUsdPriceFeed: 0xA39434A63A52E749F02807ae27335515BA4b07F7,
+            ethUsdPriceFeed: 0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e,
+            btcUsdPriceFeed: 0xA39434A63A52E749F02807ae27335515BA4b07F7,
             weth: 0x1F17b8C217834c16D31357EcaB41bdD45A77741B,
             wbtc: 0x2E059df728ACb159F4A4547aBCAD3b369CF65926,
             deployerKey: vm.envUint("PRIVATE_KEY")
@@ -43,7 +43,7 @@ contract Helper is Script {
     }
 
     function getAnvilConfig() public returns (NetworkConfig memory) {
-        if (networkConfig.wethUsdPriceFeed != address(0)) {
+        if (networkConfig.ethUsdPriceFeed != address(0)) {
             return networkConfig;
         }
 
@@ -56,8 +56,8 @@ contract Helper is Script {
         vm.stopBroadcast();
 
         return NetworkConfig({
-            wethUsdPriceFeed: address(ethUsdPriceFeed),
-            wbtcUsdPriceFeed: address(btcUsdPriceFeed),
+            ethUsdPriceFeed: address(ethUsdPriceFeed),
+            btcUsdPriceFeed: address(btcUsdPriceFeed),
             weth: address(wethMock),
             wbtc: address(wbtcMock),
             deployerKey: DEFAULT_ANVIL_KEY
