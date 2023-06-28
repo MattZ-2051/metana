@@ -8,7 +8,7 @@ import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/Ag
 
 contract ZEngine is ReentrancyGuard {
     error ZEngine_NeedsMoreThanZero();
-    error ZEngine_TokenAndPriceAddress(string message);
+    error ZEngine_TokenAndPriceAddress();
     error ZEngine_TokenNotAllowed();
     error ZEngine_TransferFailed();
     error ZEngine_BreaksHealthFactor(uint256 healthFactor);
@@ -47,7 +47,7 @@ contract ZEngine is ReentrancyGuard {
 
     constructor(address[] memory _tokenAddresses, address[] memory _priceFeedAddresses, address _zcoinAddress) {
         if (_tokenAddresses.length != _priceFeedAddresses.length) {
-            revert ZEngine_TokenAndPriceAddress("token address and price feed address not the same length");
+            revert ZEngine_TokenAndPriceAddress();
         }
         for (uint256 i = 0; i < _tokenAddresses.length; i++) {
             s_priceFeeds[_tokenAddresses[i]] = _priceFeedAddresses[i];
